@@ -13,6 +13,6 @@ fun HealthScreen() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text("健康页面")
+        Text("健康页面111")
     }
 }
