@@ -1,36 +1,58 @@
 package com.example.healthbandapp.ui.theme.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+
 
 @Composable
 fun HealthCard(
     title: String,
-    value: String
+    value: String,
+    unit: String,
+    color: Color
 ) {
+
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(5.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(130.dp),
+
+        shape = RoundedCornerShape(24.dp),
+
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        )
+
     ) {
 
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
 
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium
-            )
+            Text(title)
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Row {
 
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineSmall
-            )
+                Text(
+                    value,
+                    style = MaterialTheme.typography.displayMedium,
+                    color = color
+                )
+
+                Spacer(
+                    Modifier.width(8.dp)
+                )
+
+                Text(unit)
+
+            }
+
         }
+
     }
 }
