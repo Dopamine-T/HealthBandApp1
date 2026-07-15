@@ -1,18 +1,27 @@
 package com.example.healthbandapp.ui.theme.screens
 
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.healthbandapp.ui.theme.*
-
+import androidx.navigation.NavHostController
+import androidx.navigation.NavController
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
 
 
     Column(
@@ -37,81 +46,131 @@ fun HomeScreen() {
 
         Text(
 
-            text = "今天状态良好",
+            text = "今日健康概览",
 
             color = Color.Gray
 
         )
 
 
-        HealthCard(
 
-            title = "❤️ 心率",
+        // 健康评分
 
-            value = "82",
+        DashboardCard(
 
-            unit = "BPM",
+            title = "⭐ 健康评分",
 
-            color = HeartRed
+            content = "92 分\n状态良好",
 
-        )
+            color = Color(0xFF34C759),
 
-
-        HealthCard(
-
-            title = "🩸 血氧",
-
-            value = "98",
-
-            unit = "%",
-
-            color = OxygenBlue
-
-        )
+            onClick = {
+                navController.navigate("score")
+            }
 
 
-        HealthCard(
-
-            title = "🚶 步数",
-
-            value = "6582",
-
-            unit = "步",
-
-            color = StepGreen
-
-        )
-
-
-        HealthCard(
-
-            title = "😴 睡眠",
-
-            value = "7.5",
-
-            unit = "小时",
-
-            color = SleepPurple
 
         )
 
 
 
-        Button(
 
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp),
+        // AI助手
+
+        DashboardCard(
+
+            title = "🤖 AI健康助手",
+
+            content = "根据你的身体数据\n生成今日健康建议",
+
+            color = Color(0xFF007AFF),
+
+            onClick = {
+                navController.navigate("ai")
+            }
+
+        )
 
 
-            shape = RoundedCornerShape(28.dp),
 
 
-            onClick = {}
+
+        // 异常提醒
+
+        DashboardCard(
+
+            title = "⚠️ 异常提醒",
+
+            content = "暂无异常数据",
+
+            color = Color(0xFFFF9500),
+
+            onClick = {
+                navController.navigate("warning")
+            }
+
+        )
+
+
+
+
+
+        // 今日报告
+
+        DashboardCard(
+
+            title = "📋 今日报告",
+
+            content = "查看今日心率、睡眠、运动分析",
+
+            color = Color(0xFF5856D6),
+
+            onClick = {
+                navController.navigate("report")
+            }
+
+
+
+        )
+
+
+
+
+
+        // 快捷操作
+
+        Text(
+
+            text = "快捷操作",
+
+            style = MaterialTheme.typography.titleMedium
+
+        )
+
+
+
+        Row(
+
+            modifier = Modifier.fillMaxWidth(),
+
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
 
         ){
 
-            Text("连接手环")
+
+            SmallActionButton(
+
+                text = "📱连接设备"
+
+            )
+
+
+            SmallActionButton(
+
+                text = "❤️测心率"
+
+            )
+
 
         }
 
@@ -123,95 +182,62 @@ fun HomeScreen() {
 
 
 
+
 @Composable
-fun HealthCard(
-
-    title:String,
-
-    value:String,
-
-    unit:String,
-
-    color: Color
-
-){
-
+fun DashboardCard(
+    title: String,
+    content: String,
+    color: Color,
+    onClick: () -> Unit
+) {
 
     Card(
-
         modifier = Modifier
             .fillMaxWidth()
-            .height(130.dp),
-
-
-        shape = RoundedCornerShape(24.dp),
-
-
-        colors = CardDefaults.cardColors(
-
-            containerColor = Color.White
-
-        )
-
-    ){
-
+            .clickable {
+                onClick.invoke()
+            }
+    ) {
 
         Column(
-
             modifier = Modifier.padding(20.dp)
-
-        ){
-
+        ) {
 
             Text(
-
-                title,
-
-                style = MaterialTheme.typography.titleMedium
-
+                text = title,
+                color = color
             )
 
-
-            Spacer(
-                Modifier.height(8.dp)
+            Text(
+                text = content
             )
-
-
-            Row{
-
-
-                Text(
-
-                    value,
-
-                    style = MaterialTheme.typography.displayMedium,
-
-                    color = color
-
-                )
-
-
-                Spacer(
-                    Modifier.width(8.dp)
-                )
-
-
-                Text(
-
-                    unit,
-
-                    modifier = Modifier.padding(top = 25.dp)
-
-                )
-
-
-            }
-
 
         }
 
+    }
+}
+
+
+
+
+@Composable
+fun SmallActionButton(
+    text:String,
+    modifier: Modifier = Modifier
+){
+
+    Button(
+
+        onClick = {},
+
+        modifier = modifier,
+
+        shape = RoundedCornerShape(20.dp)
+
+    ){
+
+        Text(text)
 
     }
-
 
 }

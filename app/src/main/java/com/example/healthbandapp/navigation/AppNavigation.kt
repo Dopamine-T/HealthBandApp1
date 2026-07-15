@@ -10,7 +10,11 @@ import com.example.healthbandapp.ui.theme.screens.HomeScreen
 import com.example.healthbandapp.ui.theme.screens.ProfileScreen
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
+import com.example.healthbandapp.ui.theme.screens.AiAssistantScreen
 import com.example.healthbandapp.ui.theme.screens.HeartRateScreen
+import com.example.healthbandapp.ui.theme.screens.ReportScreen
+import com.example.healthbandapp.ui.theme.screens.ScoreScreen
+import com.example.healthbandapp.ui.theme.screens.WarningScreen
 
 
 @Composable
@@ -63,7 +67,9 @@ fun AppNavigation() {
 
 
             composable("home") {
-                HomeScreen()
+                HomeScreen(
+                    navController = navController
+                )
             }
 
 
@@ -86,6 +92,22 @@ fun AppNavigation() {
 
             composable("profile") {
                 ProfileScreen()
+            }
+
+            composable("ai"){
+                AiAssistantScreen()
+            }
+
+            composable("report"){
+                ReportScreen()
+            }
+
+            composable("warning"){
+                WarningScreen()
+            }
+
+            composable("score"){
+                ScoreScreen()
             }
 
         }
