@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.activity.compose.BackHandler
 
 
 
@@ -63,7 +64,41 @@ fun ProfileScreen(){
         mutableStateOf("main")
 
     }
+    val pageStack = remember {
 
+        mutableStateListOf("main")
+
+    }
+    fun navigateTo(target:String){
+
+        pageStack.add(target)
+
+        page = target
+
+    }
+    //返回上一层
+    fun goBack(){
+
+        if(pageStack.size > 1){
+
+
+            pageStack.removeAt(
+                pageStack.size-1
+            )
+
+
+            page = pageStack.last()
+
+
+        }
+
+    }
+
+    BackHandler {
+
+        goBack()
+
+    }
 
 
     when(page){
@@ -79,7 +114,7 @@ fun ProfileScreen(){
 
                 onClick={
 
-                    page=it
+                    navigateTo(it)
 
                 }
 
@@ -97,13 +132,13 @@ fun ProfileScreen(){
 
                 onClick={
 
-                    page=it
+                    navigateTo(it)
 
                 },
 
                 onBack={
 
-                    page="main"
+                    goBack()
 
                 }
 
@@ -176,7 +211,7 @@ fun ProfileScreen(){
 
                 onBack={
 
-                    page="main"
+                    goBack()
 
                 }
 
@@ -367,8 +402,6 @@ fun ProfileMain(
             "🎯 活动中心",
 
             "🔒 隐私管理",
-
-            "💬 帮助与反馈",
 
             "🔄 检查更新",
 
@@ -1099,24 +1132,6 @@ fun DetailPage(
         
         位置信息：
         已关闭
-        """.trimIndent()
-
-
-
-                //帮助反馈
-
-                "💬 帮助与反馈" ->
-
-                    """
-        💬 帮助与反馈
-        
-        常见问题
-        
-        账号问题
-        
-        数据同步问题
-        
-        意见反馈
         """.trimIndent()
 
 
