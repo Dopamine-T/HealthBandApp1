@@ -8,6 +8,13 @@ import com.example.healthbandapp.ui.theme.screens.DeviceScreen
 import com.example.healthbandapp.ui.theme.screens.HealthScreen
 import com.example.healthbandapp.ui.theme.screens.HomeScreen
 import com.example.healthbandapp.ui.theme.screens.ProfileScreen
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import com.example.healthbandapp.ui.theme.screens.AiAssistantScreen
+import com.example.healthbandapp.ui.theme.screens.HeartRateScreen
+import com.example.healthbandapp.ui.theme.screens.ReportScreen
+import com.example.healthbandapp.ui.theme.screens.ScoreScreen
+import com.example.healthbandapp.ui.theme.screens.WarningScreen
 
 
 @Composable
@@ -44,24 +51,39 @@ fun AppNavigation() {
 
         }
 
-    ) { padding ->
+    ){ padding ->
 
 
         NavHost(
+
             navController = navController,
-            startDestination = "home"
+
+            startDestination = "home",
+
+            modifier = Modifier
+                .padding(padding)
+
         ) {
 
 
             composable("home") {
-                HomeScreen()
+                HomeScreen(
+                    navController = navController
+                )
             }
 
 
             composable("health") {
-                HealthScreen()
+                HealthScreen(
+                    navController = navController
+                )
             }
 
+            composable("heartRate") {
+
+                HeartRateScreen()
+
+            }
 
             composable("device") {
                 DeviceScreen()
@@ -70,6 +92,22 @@ fun AppNavigation() {
 
             composable("profile") {
                 ProfileScreen()
+            }
+
+            composable("ai"){
+                AiAssistantScreen()
+            }
+
+            composable("report"){
+                ReportScreen()
+            }
+
+            composable("warning"){
+                WarningScreen()
+            }
+
+            composable("score"){
+                ScoreScreen()
             }
 
         }
