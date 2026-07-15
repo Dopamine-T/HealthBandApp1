@@ -13,29 +13,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 
-//==============================
+
+//============================
 // 用户信息
-//==============================
+//============================
 
 data class UserInfo(
 
-    var phone:String = "13800138000",
+    var phone:String="13800138000",
 
-    //昵称
-    var name:String = "健康用户",
+    var name:String="健康用户",
 
-    //头像
-    var avatar:String = "👤",
+    var avatar:String="👤",
 
-    var age:String = "25",
+    var age:String="25",
 
-    var gender:String = "男",
+    var gender:String="男",
 
-    var height:String = "170",
+    var height:String="170",
 
-    var weight:String = "65"
+    var weight:String="65"
 
 )
 
@@ -67,7 +68,7 @@ fun ProfileScreen(){
 
     when(page){
 
-        //主页
+
 
         "main" -> {
 
@@ -84,23 +85,19 @@ fun ProfileScreen(){
 
             )
 
-
         }
 
 
 
-        //个人信息查看
 
-        "info" -> {
+        "健康数据"->{
 
 
-            UserInfoScreen(
+            HealthDataPage(
 
-                userInfo=userInfo,
+                onClick={
 
-                onEdit={
-
-                    page="edit"
+                    page=it
 
                 },
 
@@ -117,20 +114,24 @@ fun ProfileScreen(){
 
 
 
-        //编辑
-
-        "edit" -> {
 
 
-            EditUserInfoScreen(
+        "个人信息"->{
+
+
+            UserInfoPage(
 
                 userInfo=userInfo,
 
-                onSave={
+                onEdit={
 
-                    userInfo=it
+                    page="编辑资料"
 
-                    page="info"
+                },
+
+                onBack={
+
+                    page="健康数据"
 
                 }
 
@@ -141,12 +142,35 @@ fun ProfileScreen(){
 
 
 
-        //健康详情
+
+
+        "编辑资料"->{
+
+
+            EditUserPage(
+
+                userInfo=userInfo,
+
+                onSave={
+
+                    userInfo=it
+
+                    page="个人信息"
+
+                }
+
+            )
+
+
+        }
+
+
+
 
         else->{
 
 
-            HealthDetailScreen(
+            DetailPage(
 
                 title=page,
 
@@ -175,10 +199,9 @@ fun ProfileScreen(){
 
 
 
-//==============================
+//============================
 // 个人主页
-//==============================
-
+//============================
 
 @Composable
 fun ProfileMain(
@@ -190,167 +213,190 @@ fun ProfileMain(
 ){
 
 
+
     Column(
 
         modifier=Modifier
             .fillMaxSize()
-            .padding(20.dp),
-
-        horizontalAlignment=Alignment.CenterHorizontally
+            .padding(
+                start = 20.dp,
+                end = 20.dp,
+                top = 20.dp,
+                bottom = 120.dp
+            )
+            .verticalScroll(
+                rememberScrollState()
+            )
 
     ){
 
 
 
-        //头像
+        //头像昵称
 
-        Box(
+        Row(
 
-            modifier=Modifier
-                .size(100.dp)
-                .clip(CircleShape)
-                .background(Color.LightGray),
-
-            contentAlignment=Alignment.Center
+            verticalAlignment=Alignment.CenterVertically
 
         ){
 
-            Text(
 
-                text=userInfo.avatar,
-
-                fontSize=50.sp
-
-            )
-
-        }
-
-
-
-
-        Spacer(
-            Modifier.height(15.dp)
-        )
-
-
-
-        //昵称
-
-        Text(
-
-            text=userInfo.name,
-
-            fontSize=24.sp,
-
-            fontWeight=FontWeight.Bold
-
-        )
-
-
-
-        //ID
-
-        Text(
-
-            text="ID:${userInfo.phone}",
-
-            color=Color.Gray
-
-        )
-
-
-
-        Spacer(
-            Modifier.height(25.dp)
-        )
-
-
-
-
-        val list=listOf(
-
-            "info" to "👤 个人信息",
-
-            "🚶 步数" to "🚶 步数",
-
-            "📏 距离" to "📏 距离",
-
-            "🔥 热量" to "🔥 热量",
-
-            "📅 打卡记录" to "📅 打卡记录",
-
-            "😴 睡眠" to "😴 睡眠",
-
-            "❤️ 心率" to "❤️ 心率",
-
-            "😰 压力" to "😰 压力"
-
-        )
-
-
-
-        list.forEach {item->
-
-
-
-            Card(
+            Box(
 
                 modifier=Modifier
+                    .size(85.dp)
+                    .clip(CircleShape)
+                    .background(Color.LightGray),
 
-                    .fillMaxWidth()
-
-                    .padding(vertical=5.dp)
-
-                    .clickable {
-
-
-                        onClick(item.first)
-
-
-                    }
+                contentAlignment=Alignment.Center
 
             ){
 
 
+                Text(
 
-                Row(
+                    text=userInfo.avatar,
 
-                    modifier=Modifier
-                        .fillMaxWidth()
-                        .padding(18.dp),
+                    fontSize=40.sp
 
-                    horizontalArrangement =
-                        Arrangement.SpaceBetween
-
-                ){
+                )
 
 
-                    Text(
-
-                        item.second,
-
-                        fontSize=18.sp
-
-                    )
+            }
 
 
 
-                    Text(
-
-                        "查看>",
-
-                        color=Color.Gray
-
-                    )
+            Spacer(
+                Modifier.width(20.dp)
+            )
 
 
-                }
+
+            Column{
+
+
+                Text(
+
+                    userInfo.name,
+
+                    fontSize=24.sp,
+
+                    fontWeight=FontWeight.Bold
+
+                )
+
+
+
+                Text(
+
+                    "ID:${userInfo.phone}",
+
+                    color=Color.Gray
+
+                )
 
 
             }
 
 
         }
+
+
+
+
+
+        Spacer(
+            Modifier.height(30.dp)
+        )
+
+
+
+
+        //====================
+        //健康数据入口
+        //====================
+
+
+
+
+
+
+        ProfileItem(
+
+            "🏥 健康数据",
+
+            {
+
+                onClick("健康数据")
+
+            }
+
+        )
+
+
+
+
+
+
+
+
+
+
+
+
+        //====================
+        //其他功能
+        //====================
+
+
+
+
+
+        val list=listOf(
+
+            "🏆 我的成就",
+
+            "🏃 运动记录",
+
+            "🆘 医疗急救卡",
+
+            "💚 健康关怀",
+
+            "📊 运动周报",
+
+            "🎯 活动中心",
+
+            "🔒 隐私管理",
+
+            "💬 帮助与反馈",
+
+            "🔄 检查更新",
+
+            "ℹ️ 关于"
+
+        )
+
+
+
+
+        list.forEach{
+
+
+            ProfileItem(
+
+                it,
+
+                {
+
+                    onClick(it)
+
+                }
+
+            )
+
+
+        }
+
 
 
     }
@@ -365,17 +411,15 @@ fun ProfileMain(
 
 
 
-//==============================
-// 个人信息页面
-//==============================
+//============================
+// 健康数据页面
+//============================
 
 
 @Composable
-fun UserInfoScreen(
+fun HealthDataPage(
 
-    userInfo:UserInfo,
-
-    onEdit:()->Unit,
+    onClick:(String)->Unit,
 
     onBack:()->Unit
 
@@ -409,7 +453,7 @@ fun UserInfoScreen(
 
         Text(
 
-            "个人信息",
+            "健康数据",
 
             fontSize=26.sp,
 
@@ -420,42 +464,49 @@ fun UserInfoScreen(
 
 
         Spacer(
-            Modifier.height(20.dp)
+            Modifier.height(15.dp)
         )
 
 
 
-        Text("头像：${userInfo.avatar}")
 
-        Text("昵称：${userInfo.name}")
+        val list=listOf(
 
-        Text("手机号：${userInfo.phone}")
+            "个人信息",
 
-        Text("年龄：${userInfo.age}岁")
+            "🚶 步数",
 
-        Text("性别：${userInfo.gender}")
+            "📏 距离",
 
-        Text("身高：${userInfo.height}cm")
+            "🔥 热量",
 
-        Text("体重：${userInfo.weight}kg")
+            "📅 打卡记录",
 
+            "😴 睡眠",
 
+            "❤️ 心率",
 
-        Spacer(
-            Modifier.height(30.dp)
+            "😰 压力"
+
         )
 
 
 
-        Button(
+        list.forEach{
 
-            onClick=onEdit,
 
-            modifier=Modifier.fillMaxWidth()
+            ProfileItem(
 
-        ){
+                it,
 
-            Text("修改资料")
+                {
+
+                    onClick(it)
+
+                }
+
+            )
+
 
         }
 
@@ -473,13 +524,184 @@ fun UserInfoScreen(
 
 
 
-//==============================
-// 编辑个人资料
-//==============================
+//============================
+// 通用列表
+//============================
+
+@Composable
+fun ProfileItem(
+
+    title:String,
+
+    onClick:()->Unit
+
+){
+
+
+    Card(
+
+        modifier=Modifier
+
+            .fillMaxWidth()
+
+            .padding(vertical=5.dp)
+
+            .clickable {
+
+                onClick()
+
+            }
+
+    ){
+
+
+        Row(
+
+            modifier=Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+
+
+            horizontalArrangement=
+                Arrangement.SpaceBetween
+
+
+        ){
+
+
+            Text(
+
+                title,
+
+                fontSize=18.sp
+
+            )
+
+
+
+            Text(
+
+                ">",
+
+                color=Color.Gray
+
+            )
+
+
+        }
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+//============================
+//个人信息查看
+//============================
 
 
 @Composable
-fun EditUserInfoScreen(
+fun UserInfoPage(
+
+    userInfo:UserInfo,
+
+    onEdit:()->Unit,
+
+    onBack:()->Unit
+
+){
+
+
+    Column(
+
+        Modifier
+            .fillMaxSize()
+            .padding(20.dp)
+
+    ){
+
+
+
+        Button(
+            onClick=onBack
+        ){
+
+            Text("返回")
+
+        }
+
+
+
+        Text(
+
+            "个人信息",
+
+            fontSize=26.sp
+
+        )
+
+
+
+        Spacer(
+            Modifier.height(20.dp)
+        )
+
+
+        Text("头像：${userInfo.avatar}")
+
+        Text("昵称：${userInfo.name}")
+
+        Text("手机号：${userInfo.phone}")
+
+        Text("年龄：${userInfo.age}")
+
+        Text("性别：${userInfo.gender}")
+
+        Text("身高：${userInfo.height}cm")
+
+        Text("体重：${userInfo.weight}kg")
+
+
+
+
+        Button(
+
+            onClick=onEdit
+
+        ){
+
+            Text("修改资料")
+
+        }
+
+
+    }
+
+
+}
+
+
+
+
+
+
+
+
+//============================
+//编辑资料
+//============================
+
+
+@Composable
+fun EditUserPage(
 
     userInfo:UserInfo,
 
@@ -488,67 +710,20 @@ fun EditUserInfoScreen(
 ){
 
 
+    var name by remember {
+        mutableStateOf(userInfo.name)
+    }
+
 
     var avatar by remember {
-
         mutableStateOf(userInfo.avatar)
-
     }
-
-
-
-    var name by remember {
-
-        mutableStateOf(userInfo.name)
-
-    }
-
-
-
-    var phone by remember {
-
-        mutableStateOf(userInfo.phone)
-
-    }
-
-
-
-    var age by remember {
-
-        mutableStateOf(userInfo.age)
-
-    }
-
-
-
-    var gender by remember {
-
-        mutableStateOf(userInfo.gender)
-
-    }
-
-
-
-    var height by remember {
-
-        mutableStateOf(userInfo.height)
-
-    }
-
-
-
-    var weight by remember {
-
-        mutableStateOf(userInfo.weight)
-
-    }
-
 
 
 
     Column(
 
-        modifier=Modifier
+        Modifier
             .fillMaxSize()
             .padding(20.dp)
 
@@ -558,21 +733,11 @@ fun EditUserInfoScreen(
 
         Text(
 
-            "修改个人资料",
+            "修改资料",
 
             fontSize=26.sp
 
         )
-
-
-
-        Spacer(
-            Modifier.height(15.dp)
-        )
-
-
-
-        Text("选择头像")
 
 
 
@@ -584,19 +749,18 @@ fun EditUserInfoScreen(
                 "😀",
                 "👨",
                 "👩",
-                "🧑‍⚕️",
                 "🏃"
             ).forEach{
 
 
                 Text(
 
-                    text=it,
+                    it,
 
                     fontSize=35.sp,
 
                     modifier=Modifier
-                        .padding(6.dp)
+                        .padding(8.dp)
                         .clickable {
 
                             avatar=it
@@ -613,7 +777,6 @@ fun EditUserInfoScreen(
 
 
 
-
         OutlinedTextField(
 
             value=name,
@@ -626,110 +789,29 @@ fun EditUserInfoScreen(
 
 
 
-        OutlinedTextField(
-
-            value=phone,
-
-            onValueChange={phone=it},
-
-            label={Text("手机号")}
-
-        )
-
-
-
-        OutlinedTextField(
-
-            value=age,
-
-            onValueChange={age=it},
-
-            label={Text("年龄")}
-
-        )
-
-
-
-        OutlinedTextField(
-
-            value=gender,
-
-            onValueChange={gender=it},
-
-            label={Text("性别")}
-
-        )
-
-
-
-        OutlinedTextField(
-
-            value=height,
-
-            onValueChange={height=it},
-
-            label={Text("身高(cm)")}
-
-        )
-
-
-
-        OutlinedTextField(
-
-            value=weight,
-
-            onValueChange={weight=it},
-
-            label={Text("体重(kg)")}
-
-        )
-
-
-
-        Spacer(
-            Modifier.height(20.dp)
-        )
-
-
-
         Button(
 
             onClick={
 
-
                 onSave(
 
-                    UserInfo(
-
-                        phone=phone,
+                    userInfo.copy(
 
                         name=name,
 
-                        avatar=avatar,
-
-                        age=age,
-
-                        gender=gender,
-
-                        height=height,
-
-                        weight=weight
+                        avatar=avatar
 
                     )
 
                 )
 
-
-            },
-
-            modifier=Modifier.fillMaxWidth()
+            }
 
         ){
 
             Text("保存")
 
         }
-
 
 
     }
@@ -744,13 +826,13 @@ fun EditUserInfoScreen(
 
 
 
-//==============================
-// 健康数据详情
-//==============================
+//============================
+//详情页面
+//============================
 
 
 @Composable
-fun HealthDetailScreen(
+fun DetailPage(
 
     title:String,
 
@@ -761,7 +843,7 @@ fun HealthDetailScreen(
 
     Column(
 
-        modifier=Modifier
+        Modifier
             .fillMaxSize()
             .padding(20.dp)
 
@@ -802,69 +884,286 @@ fun HealthDetailScreen(
 
 
 
-        when(title){
+        Text(
+
+            when(title){
 
 
-            "🚶 步数"->{
+                "🚶 步数" ->
+                    "今日步数：8560步\n目标：10000步"
 
-                Text("今日步数：8560步")
-                Text("目标：10000步")
+
+
+                "📏 距离" ->
+                    "今日距离：6.8km"
+
+
+
+                "🔥 热量" ->
+                    "今日消耗：420kcal"
+
+
+
+                "📅 打卡记录" ->
+                    "连续打卡15天"
+
+
+
+                "😴 睡眠" ->
+                    "睡眠7.5小时\n评分88"
+
+
+
+                "❤️ 心率" ->
+                    "平均心率75bpm"
+
+
+
+                "😰 压力" ->
+                    "压力指数35"
+
+
+
+                "🏆 我的成就" ->
+
+                    """
+        🏆 我的成就
+        
+        已获得勋章：
+        
+        🥇 连续运动达人
+        
+        🥈 步数挑战达人
+        
+        🥉 睡眠管理达人
+        
+        
+        健康积分：
+        1280 分
+        
+        累计运动：
+        68 次
+        
+        连续打卡：
+        15 天
+        """.trimIndent()
+
+
+
+                //运动记录
+
+                "🏃 运动记录" ->
+
+                    """
+        🏃 运动记录
+        
+        今日运动：
+        
+        跑步 3.2 km
+        
+        时间：
+        35 分钟
+        
+        消耗：
+        260 kcal
+        
+        
+        本周：
+        
+        运动次数：
+        5 次
+        
+        总距离：
+        28.6 km
+        
+        总消耗：
+        1800 kcal
+        """.trimIndent()
+
+
+
+                //医疗急救卡
+
+                "🆘 医疗急救卡" ->
+
+                    """
+        🆘 医疗急救卡
+        
+        姓名：
+        健康用户
+        
+        手机：
+        13800138000
+        
+        血型：
+        未设置
+        
+        紧急联系人：
+        未设置
+        
+        过敏史：
+        无
+        """.trimIndent()
+
+
+
+                //健康关怀
+
+                "💚 健康关怀" ->
+
+                    """
+        💚 健康关怀
+        
+        今日健康评分：
+        
+        92 分
+        
+        
+        健康建议：
+        
+        ✓ 保持每天运动
+        
+        ✓ 保证7小时睡眠
+        
+        ✓ 注意饮水
+        """.trimIndent()
+
+
+
+                //运动周报
+
+                "📊 运动周报" ->
+
+                    """
+        📊 运动周报
+        
+        本周统计：
+        
+        
+        步数：
+        56000 步
+        
+        距离：
+        42.5 km
+        
+        消耗：
+        3200 kcal
+        
+        运动：
+        5 次
+        
+        睡眠：
+        平均7.5小时
+        """.trimIndent()
+
+
+
+                //活动中心
+
+                "🎯 活动中心" ->
+
+                    """
+        🎯 活动中心
+        
+        当前活动：
+        
+        30天健康挑战
+        
+        
+        完成进度：
+        
+        ███████░░░
+        
+        70%
+        
+        
+        奖励：
+        
+        健康积分+200
+        """.trimIndent()
+
+
+
+                //隐私管理
+
+                "🔒 隐私管理" ->
+
+                    """
+        🔒 隐私管理
+        
+        健康数据权限：
+        已开启
+        
+        运动数据共享：
+        已关闭
+        
+        位置信息：
+        已关闭
+        """.trimIndent()
+
+
+
+                //帮助反馈
+
+                "💬 帮助与反馈" ->
+
+                    """
+        💬 帮助与反馈
+        
+        常见问题
+        
+        账号问题
+        
+        数据同步问题
+        
+        意见反馈
+        """.trimIndent()
+
+
+
+                //检查更新
+
+                "🔄 检查更新" ->
+
+                    """
+        🔄 检查更新
+        
+        当前版本：
+        
+        v1.0.0
+        
+        已是最新版本
+        """.trimIndent()
+
+
+
+                //关于
+
+                "ℹ️ 关于" ->
+
+                    """
+        ℹ️ 关于
+        
+        健康手环 App
+        
+        版本：
+        v1.0.0
+        
+        用于记录健康、
+        运动和生活数据。
+        """.trimIndent()
+
+
+
+                else ->
+
+                    "功能开发中"
+
+
 
             }
 
-
-
-            "📏 距离"->{
-
-                Text("今日距离：6.8km")
-
-            }
-
-
-
-            "🔥 热量"->{
-
-                Text("今日消耗：420kcal")
-
-            }
-
-
-
-            "📅 打卡记录"->{
-
-                Text("连续打卡：15天")
-
-            }
-
-
-
-            "😴 睡眠"->{
-
-                Text("睡眠时间：7.5小时")
-                Text("睡眠评分：88")
-
-            }
-
-
-
-            "❤️ 心率"->{
-
-                Text("平均心率：75bpm")
-                Text("最高心率：120bpm")
-
-            }
-
-
-
-            "😰 压力"->{
-
-                Text("压力指数：35")
-                Text("状态：正常")
-
-            }
-
-
-        }
+        )
 
 
     }
