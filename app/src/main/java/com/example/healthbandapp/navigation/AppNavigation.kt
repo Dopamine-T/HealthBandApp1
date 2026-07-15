@@ -28,7 +28,16 @@ fun AppNavigation() {
 
                 onNavigate = { route ->
 
-                    navController.navigate(route)
+                    navController.navigate(route) {
+
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+
+                        launchSingleTop = true
+
+                        restoreState = true
+                    }
 
                 }
             )

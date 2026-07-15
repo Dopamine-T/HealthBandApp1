@@ -1,107 +1,217 @@
 package com.example.healthbandapp.ui.theme.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.healthbandapp.ui.theme.components.HealthCard
+import com.example.healthbandapp.ui.theme.*
+
 
 @Composable
 fun HomeScreen() {
 
+
     Column(
+
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(20.dp),
 
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
 
     ) {
 
+
         Text(
-            text = "Health Band",
+
+            text = "你好 👋",
+
             style = MaterialTheme.typography.headlineMedium
+
         )
 
+
+        Text(
+
+            text = "今天状态良好",
+
+            color = Color.Gray
+
+        )
+
+
         HealthCard(
+
             title = "❤️ 心率",
-            value = "82 bpm"
+
+            value = "82",
+
+            unit = "BPM",
+
+            color = HeartRed
+
         )
 
+
         HealthCard(
+
             title = "🩸 血氧",
-            value = "98%"
+
+            value = "98",
+
+            unit = "%",
+
+            color = OxygenBlue
+
         )
+
 
         HealthCard(
-            title = "🚶 今日步数",
-            value = "6582"
+
+            title = "🚶 步数",
+
+            value = "6582",
+
+            unit = "步",
+
+            color = StepGreen
+
         )
+
 
         HealthCard(
-            title = "🔋 手环状态",
-            value = "未连接"
+
+            title = "😴 睡眠",
+
+            value = "7.5",
+
+            unit = "小时",
+
+            color = SleepPurple
+
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+
 
         Button(
-            modifier = Modifier.fillMaxWidth(),
-            onClick = {
 
-            }
-        ) {
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+
+
+            shape = RoundedCornerShape(28.dp),
+
+
+            onClick = {}
+
+        ){
 
             Text("连接手环")
 
         }
 
+
     }
+
 
 }
 
+
+
 @Composable
 fun HealthCard(
-    title: String,
-    value: String
-) {
+
+    title:String,
+
+    value:String,
+
+    unit:String,
+
+    color: Color
+
+){
+
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 5.dp
+
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(130.dp),
+
+
+        shape = RoundedCornerShape(24.dp),
+
+
+        colors = CardDefaults.cardColors(
+
+            containerColor = Color.White
+
         )
-    ) {
+
+    ){
+
 
         Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+
+            modifier = Modifier.padding(20.dp)
+
+        ){
+
 
             Text(
-                text = title,
+
+                title,
+
                 style = MaterialTheme.typography.titleMedium
+
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineSmall
+            Spacer(
+                Modifier.height(8.dp)
             )
+
+
+            Row{
+
+
+                Text(
+
+                    value,
+
+                    style = MaterialTheme.typography.displayMedium,
+
+                    color = color
+
+                )
+
+
+                Spacer(
+                    Modifier.width(8.dp)
+                )
+
+
+                Text(
+
+                    unit,
+
+                    modifier = Modifier.padding(top = 25.dp)
+
+                )
+
+
+            }
+
 
         }
 
+
     }
+
 
 }
