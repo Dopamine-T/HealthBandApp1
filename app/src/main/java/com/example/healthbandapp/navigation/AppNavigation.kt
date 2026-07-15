@@ -8,6 +8,9 @@ import com.example.healthbandapp.ui.theme.screens.DeviceScreen
 import com.example.healthbandapp.ui.theme.screens.HealthScreen
 import com.example.healthbandapp.ui.theme.screens.HomeScreen
 import com.example.healthbandapp.ui.theme.screens.ProfileScreen
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Modifier
+import com.example.healthbandapp.ui.theme.screens.HeartRateScreen
 
 
 @Composable
@@ -44,12 +47,18 @@ fun AppNavigation() {
 
         }
 
-    ) { padding ->
+    ){ padding ->
 
 
         NavHost(
+
             navController = navController,
-            startDestination = "home"
+
+            startDestination = "home",
+
+            modifier = Modifier
+                .padding(padding)
+
         ) {
 
 
@@ -59,9 +68,16 @@ fun AppNavigation() {
 
 
             composable("health") {
-                HealthScreen()
+                HealthScreen(
+                    navController = navController
+                )
             }
 
+            composable("heartRate") {
+
+                HeartRateScreen()
+
+            }
 
             composable("device") {
                 DeviceScreen()
