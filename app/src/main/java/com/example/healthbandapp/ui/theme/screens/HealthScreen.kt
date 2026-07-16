@@ -34,7 +34,7 @@ import androidx.navigation.NavHostController
 @Composable
 fun HealthScreen(
     navController: NavHostController
-){
+) {
 
 
     // 手环心率数据
@@ -83,10 +83,10 @@ fun HealthScreen(
 
         mutableStateListOf<Int>().apply {
 
-            repeat(48){
+            repeat(48) {
 
                 add(
-                    Random.nextInt(55,120)
+                    Random.nextInt(55, 120)
                 )
 
             }
@@ -106,7 +106,6 @@ fun HealthScreen(
     var connected by remember {
         mutableStateOf(true)
     }
-
 
 
     //========== 新增健康指标 ==========
@@ -183,7 +182,7 @@ fun HealthScreen(
 
         horizontalAlignment = Alignment.CenterHorizontally
 
-    ){
+    ) {
 //1，身体指标
         Spacer(
             Modifier.height(15.dp)
@@ -203,7 +202,7 @@ fun HealthScreen(
 
             shape = RoundedCornerShape(18.dp)
 
-        ){
+        ) {
 
             Row(
 
@@ -214,7 +213,7 @@ fun HealthScreen(
 
                 verticalAlignment = Alignment.CenterVertically
 
-            ){
+            ) {
 
                 Text(
                     "❤️",
@@ -246,44 +245,42 @@ fun HealthScreen(
 
         }
 
-            Column(
+        Column(
 
-                modifier =
-                    Modifier.padding(20.dp)
+            modifier =
+                Modifier.padding(20.dp)
 
-            ){
+        ) {
 
-                Text(
+            Text(
 
-                    "实时身体指标",
+                "实时身体指标",
 
-                    fontSize = 20.sp
+                fontSize = 20.sp
 
-                )
-
-
-                Spacer(
-                    Modifier.height(10.dp)
-                )
+            )
 
 
-                Text(
-                    "🫁 血氧饱和度 : $oxygen%"
-                )
+            Spacer(
+                Modifier.height(10.dp)
+            )
 
 
-                Text(
-                    "🌡 体表温度 : %.1f ℃"
-                        .format(temperature)
-                )
+            Text(
+                "🫁 血氧饱和度 : $oxygen%"
+            )
 
 
-                Text(
-                    "呼吸率 : $breathingRate 次/分"
-                )
+            Text(
+                "🌡 体表温度 : %.1f ℃"
+                    .format(temperature)
+            )
 
 
-            }
+            Text(
+                "呼吸率 : $breathingRate 次/分"
+            )
+
 
         }
 
@@ -306,20 +303,20 @@ fun HealthScreen(
 
                     }
 
-        ){
+        ) {
 
             Column(
 
                 modifier =
                     Modifier.padding(20.dp)
 
-            ){
+            ) {
 
                 Text(
 
                     "❤️ 心率分析",
 
-                    fontSize=20.sp
+                    fontSize = 20.sp
 
                 )
 
@@ -354,436 +351,6 @@ fun HealthScreen(
         }
 
         //==============================
-// 心率详细分析展开区域
-//==============================
-
-
-        if(showHeartDetail){
-
-
-
-            Spacer(
-                Modifier.height(15.dp)
-            )
-
-
-
-//实时心率仪表盘
-
-
-            Card(
-
-                modifier =
-                    Modifier.fillMaxWidth(),
-
-                shape =
-                    RoundedCornerShape(20.dp)
-
-            ){
-
-                Column(
-
-                    modifier =
-                        Modifier
-                            .padding(20.dp),
-
-                    horizontalAlignment =
-                        Alignment.CenterHorizontally
-
-                ){
-
-
-                    Text(
-
-                        "实时心率监测",
-
-                        fontSize=20.sp
-
-                    )
-
-
-
-                    Spacer(
-                        Modifier.height(20.dp)
-                    )
-
-
-
-                    Box(
-
-                        modifier =
-                            Modifier
-                                .size(200.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    Color(0xffffdddd)
-                                ),
-
-                        contentAlignment =
-                            Alignment.Center
-
-                    ){
-
-
-
-                        Column(
-
-                            horizontalAlignment =
-                                Alignment.CenterHorizontally
-
-                        ){
-
-
-                            Icon(
-
-                                imageVector =
-                                    Icons.Default.Favorite,
-
-                                contentDescription="",
-
-                                tint =
-                                    Color.Red,
-
-                                modifier =
-                                    Modifier.size(40.dp)
-
-                            )
-
-
-
-                            Text(
-
-                                "$heartRate",
-
-                                fontSize=55.sp,
-
-                                color=Color.Red
-
-                            )
-
-
-                            Text(
-                                "BPM"
-                            )
-
-
-
-                        }
-
-
-
-                    }
-
-
-                    Spacer(
-                        Modifier.height(15.dp)
-                    )
-
-
-
-                    Text(
-
-                        if(
-                            heartRate>highHeartLimit
-                            ||
-                            heartRate<lowHeartLimit
-                        )
-
-                            "⚠ 心率异常"
-
-                        else
-
-                            "状态正常"
-
-                    )
-
-
-                }
-
-            }
-
-
-
-
-
-            Spacer(
-                Modifier.height(15.dp)
-            )
-
-
-
-//24小时心率曲线
-
-
-            Card(
-
-                modifier =
-                    Modifier.fillMaxWidth()
-
-            ){
-
-
-                Column(
-
-                    modifier =
-                        Modifier.padding(20.dp)
-
-                ){
-
-
-                    Text(
-
-                        "24小时连续心率",
-
-                        fontSize=20.sp
-
-                    )
-
-
-                    Spacer(
-                        Modifier.height(10.dp)
-                    )
-
-
-
-                    Text(
-
-                        """
-120 ┤       *
-100 ┤    *     *
- 80 ┤************
- 60 ┤
-
-     0  6  12  18  24
-
-""",
-
-                        fontSize=15.sp
-
-                    )
-
-
-                }
-
-
-            }
-
-
-
-
-
-
-            Spacer(
-                Modifier.height(15.dp)
-            )
-
-
-//关键指标
-
-
-            Card(
-
-                modifier =
-                    Modifier.fillMaxWidth()
-
-            ){
-
-
-                Column(
-
-                    modifier =
-                        Modifier.padding(20.dp)
-
-                ){
-
-
-                    Text(
-
-                        "心率关键指标",
-
-                        fontSize=20.sp
-
-                    )
-
-
-
-                    Text(
-                        "静息心率：65 BPM"
-                    )
-
-
-                    Text(
-                        "运动峰值心率：125 BPM"
-                    )
-
-
-                    Text(
-                        "夜间心率波动：55~70 BPM"
-                    )
-
-
-
-                }
-
-
-            }
-
-
-
-
-
-            Spacer(
-                Modifier.height(15.dp)
-            )
-
-
-
-
-
-//异常提醒
-
-
-            Card(
-
-                modifier =
-                    Modifier.fillMaxWidth()
-
-            ){
-
-
-                Column(
-
-                    modifier =
-                        Modifier.padding(20.dp)
-
-                ){
-
-
-
-                    Text(
-
-                        "心率异常提醒",
-
-                        fontSize=20.sp
-
-                    )
-
-
-
-                    Text(
-                        "高心率阈值：$highHeartLimit BPM"
-                    )
-
-
-                    Text(
-                        "低心率阈值：$lowHeartLimit BPM"
-                    )
-
-
-
-                    Row(
-
-                        verticalAlignment =
-                            Alignment.CenterVertically
-
-                    ){
-
-
-                        Text(
-                            "开启提醒"
-                        )
-
-
-                        Switch(
-
-                            checked =
-                                heartWarning,
-
-                            onCheckedChange = {
-
-                                heartWarning = it
-
-                            }
-
-                        )
-
-
-                    }
-
-
-
-                }
-
-
-            }
-
-
-
-
-
-            Spacer(
-                Modifier.height(15.dp)
-            )
-
-
-
-
-
-//活动状态分析
-
-
-            Card(
-
-                modifier =
-                    Modifier.fillMaxWidth()
-
-            ){
-
-
-                Column(
-
-                    modifier =
-                        Modifier.padding(20.dp)
-
-                ){
-
-
-                    Text(
-
-                        "活动状态心率分布",
-
-                        fontSize=20.sp
-
-                    )
-
-
-
-                    Text(
-                        "🚶 步行：85 BPM"
-                    )
-
-
-
-                    Text(
-                        "😴 睡眠：62 BPM"
-                    )
-
-
-
-                    Text(
-                        "😰 压力状态：95 BPM"
-                    )
-
-
-
-                }
-
-
-            }
-
-
-
-        }
 
 //3 血氧与呼吸
         Spacer(
@@ -796,20 +363,20 @@ fun HealthScreen(
             modifier =
                 Modifier.fillMaxWidth()
 
-        ){
+        ) {
 
             Column(
 
                 modifier =
                     Modifier.padding(20.dp)
 
-            ){
+            ) {
 
                 Text(
 
                     "🫁 血氧与呼吸分析",
 
-                    fontSize=20.sp
+                    fontSize = 20.sp
 
                 )
 
@@ -851,21 +418,21 @@ fun HealthScreen(
             modifier =
                 Modifier.fillMaxWidth()
 
-        ){
+        ) {
 
             Column(
 
                 modifier =
                     Modifier.padding(20.dp)
 
-            ){
+            ) {
 
 
                 Text(
 
                     "🌡 体温 & HRV",
 
-                    fontSize=20.sp
+                    fontSize = 20.sp
 
                 )
 
@@ -907,21 +474,21 @@ fun HealthScreen(
             modifier =
                 Modifier.fillMaxWidth()
 
-        ){
+        ) {
 
             Column(
 
                 modifier =
                     Modifier.padding(20.dp)
 
-            ){
+            ) {
 
 
                 Text(
 
                     "🩸 血压估算",
 
-                    fontSize=20.sp
+                    fontSize = 20.sp
 
                 )
 
@@ -930,7 +497,7 @@ fun HealthScreen(
 
                     "$bloodPressure mmHg",
 
-                    fontSize=25.sp
+                    fontSize = 25.sp
 
                 )
 
@@ -956,21 +523,21 @@ fun HealthScreen(
             modifier =
                 Modifier.fillMaxWidth()
 
-        ){
+        ) {
 
             Column(
 
                 modifier =
                     Modifier.padding(20.dp)
 
-            ){
+            ) {
 
 
                 Text(
 
                     "📋 今日健康报告",
 
-                    fontSize=20.sp
+                    fontSize = 20.sp
 
                 )
 
@@ -1008,7 +575,8 @@ fun HealthScreen(
             Modifier.height(80.dp)
         )
 
-        
+
     }
+}
 
 
