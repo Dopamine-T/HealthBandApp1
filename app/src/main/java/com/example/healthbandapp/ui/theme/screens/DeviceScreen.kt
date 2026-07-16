@@ -47,7 +47,7 @@ fun DeviceScreen() {
     var isSyncing by remember { mutableStateOf(false) }
     var isFinding by remember { mutableStateOf(false) }
     val deviceName = "MyBand X1"
-    val macAddress = "AA:BB:CC:DD:EE:FF"
+    val macAddress = "AA:BB:CC:DD:EE:FE"
     val firmwareVersion = "V1.2.3"
     val batteryLevel = 78
     val isCharging = false
