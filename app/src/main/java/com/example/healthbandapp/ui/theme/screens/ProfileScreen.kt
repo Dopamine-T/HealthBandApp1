@@ -20,7 +20,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -55,7 +54,6 @@ fun ProfileScreen(
         val uriString = userPrefs.getString("avatar_uri", null)
         mutableStateOf(uriString?.let { Uri.parse(it) })
     }
-}
 
     // 控制修改昵称弹窗的状态
     var showEditDialog by remember { mutableStateOf(false) }
@@ -81,6 +79,9 @@ fun ProfileScreen(
         }
     }
 
+    // ============================
+    // 主页面内容
+    // ============================
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -168,8 +169,8 @@ fun ProfileScreen(
                 }
             }
         }
-    }
-}
+
+        // ============================ 之前的错误在这里：多了一个 } ============================
 
         // 功能列表区域 (第一组)
         Card(
@@ -221,7 +222,11 @@ fun ProfileScreen(
             }
         }
         Spacer(Modifier.height(16.dp))
-    }
+    } // <-- 这里是 Column 的结束括号
+
+    // ============================
+    // 弹窗类组件 (必须放在 Column 外层，或者不加约束直接写在外面)
+    // ============================
 
     // 4. 优化后的修改昵称弹窗
     if (showEditDialog) {
@@ -322,7 +327,7 @@ fun ProfileScreen(
             }
         }
     }
-}
+} // <-- 这里才是 ProfileScreen 函数的真正结束括号
 
 @Composable
 fun ProfileCard(
