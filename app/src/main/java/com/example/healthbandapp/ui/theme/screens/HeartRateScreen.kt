@@ -11,9 +11,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Insights
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.MonitorHeart
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.ShowChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.mutableIntStateOf
@@ -27,6 +33,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -47,14 +54,8 @@ fun HeartRateScreen(navController: NavHostController) {
     var highLimit by remember { mutableIntStateOf(120) }
     var lowLimit by remember { mutableIntStateOf(50) }
 
-    // 模拟24小时历史数据
-    val heartData = remember {
-        List(24) { Random.nextInt(55, 130) }
-    }
-
+    val heartData = remember { List(24) { Random.nextInt(55, 130) } }
     var selectedIndex by remember { mutableIntStateOf(-1) }
-
-    // 模拟最近更新时间
     var lastUpdateTime by remember { mutableStateOf("刚刚") }
 
     // ========================
@@ -63,19 +64,17 @@ fun HeartRateScreen(navController: NavHostController) {
     LaunchedEffect(Unit) {
         var counter = 0
         while (true) {
-            delay(2000) // 每2秒刷新一次
-            // 模拟心率在正常范围内小幅度波动
+            delay(2000)
             heartRate = (heartRate + Random.nextInt(-3, 4)).coerceIn(60, 100)
             counter++
             lastUpdateTime = "${counter * 2}秒前"
         }
     }
 
-    // 动态计算当前状态与建议
     val isNormal = heartRate in lowLimit..highLimit
-    val statusText = if (isNormal) "🟢 状态正常" else "⚠ 心率异常"
+    val statusText = if (isNormal) "状态正常" else "心率异常"
     val statusColor by animateColorAsState(
-        targetValue = if (isNormal) Color(0xff2E7D32) else Color.Red,
+        targetValue = if (isNormal) Color(0xFF4CAF50) else Color(0xFFFFCDD2),
         animationSpec = tween(durationMillis = 300), label = "statusColor"
     )
     val healthAdvice = when {
@@ -90,15 +89,21 @@ fun HeartRateScreen(navController: NavHostController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("❤️ 心率监测", fontWeight = FontWeight.Bold) },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.MonitorHeart, contentDescription = "心率", tint = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(8.dp))
+                        Text("心率监测", fontWeight = FontWeight.Bold)
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
                     }
                 },
                 actions = {
                     Icon(
-                        Icons.Default.Refresh,
+                        Icons.Filled.Refresh,
                         contentDescription = "同步",
                         modifier = Modifier.padding(end = 16.dp),
                         tint = MaterialTheme.colorScheme.primary
@@ -117,171 +122,167 @@ fun HeartRateScreen(navController: NavHostController) {
         ) {
 
             // ========================
-            // 1. 实时仪表盘卡片
+            // 1. 实时仪表盘卡片 (深红渐变背景)
             // ========================
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(25.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("实时心率", fontSize = 18.sp, color = Color.Gray)
-                    Spacer(Modifier.height(20.dp))
-
-                    Box(
-                        modifier = Modifier
-                            .size(220.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xffffdddd)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(
-                                Icons.Default.Favorite,
-                                contentDescription = "",
-                                tint = Color.Red,
-                                modifier = Modifier.size(45.dp)
+                Box(
+                    modifier = Modifier
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(Color(0xFFB71C1C), Color(0xFFE53935))
                             )
-                            Text("$heartRate", fontSize = 60.sp, fontWeight = FontWeight.Bold, color = Color.Red)
-                            Text("BPM", fontSize = 16.sp, color = Color.Gray)
-                        }
-                    }
+                        )
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("实时心率", fontSize = 14.sp, color = Color.White.copy(alpha = 0.8f))
+                        Spacer(Modifier.height(15.dp))
 
-                    Spacer(Modifier.height(15.dp))
-                    Text(statusText, color = statusColor, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Spacer(Modifier.height(5.dp))
-                    Text("最近更新：$lastUpdateTime", fontSize = 12.sp, color = Color.Gray)
+                        Box(
+                            modifier = Modifier
+                                .size(220.dp)
+                                .clip(CircleShape)
+                                .background(Color.White.copy(alpha = 0.15f)), // 半透明白色圆环
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    Icons.Filled.MonitorHeart,
+                                    contentDescription = "",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(45.dp)
+                                )
+                                Text("$heartRate", fontSize = 60.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                Text("BPM", fontSize = 16.sp, color = Color.White.copy(alpha = 0.8f))
+                            }
+                        }
+
+                        Spacer(Modifier.height(15.dp))
+                        Text(statusText, color = statusColor, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                        Spacer(Modifier.height(5.dp))
+                        Text("最近更新：$lastUpdateTime", fontSize = 12.sp, color = Color.White.copy(alpha = 0.7f))
+                    }
                 }
             }
 
             Spacer(Modifier.height(20.dp))
 
             // ========================
-            // 2. 健康建议卡片
+            // 2. 健康建议卡片 (浅青背景)
             // ========================
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-            ) {
+            HeartCard("健康建议", Icons.Filled.Lightbulb, Color(0xFF006064), containerColor = Color(0xFFE0F7FA)) {
+                Text(healthAdvice, fontSize = 14.sp, color = Color(0xFF006064))
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            // ========================
+            // 3. 24小时心率曲线 (纯白背景)
+            // ========================
+            HeartCard("24小时连续心率", Icons.Filled.ShowChart, Color(0xFFEF5350)) {
                 Row(
-                    modifier = Modifier.padding(20.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("💡", fontSize = 28.sp)
-                    Spacer(Modifier.width(15.dp))
-                    Text(healthAdvice, fontSize = 14.sp, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text("全天趋势", color = Color.Gray, fontSize = 14.sp)
+                    Text("平均: ${heartData.average().toInt()} BPM", color = Color(0xFFEF5350), fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 }
-            }
+                Spacer(Modifier.height(15.dp))
 
-            Spacer(Modifier.height(20.dp))
+                HeartChart(
+                    data = heartData,
+                    selectedIndex = selectedIndex,
+                    onSelect = { selectedIndex = it }
+                )
 
-            // ========================
-            // 3. 24小时心率曲线
-            // ========================
-            Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(20.dp)) {
-                Column(modifier = Modifier.padding(20.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("24小时连续心率", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        Text("平均: ${heartData.average().toInt()} BPM", color = Color.Gray, fontSize = 14.sp)
-                    }
-                    Spacer(Modifier.height(15.dp))
-
-                    HeartChart(
-                        data = heartData,
-                        selectedIndex = selectedIndex,
-                        onSelect = { selectedIndex = it }
-                    )
-
-                    Spacer(Modifier.height(10.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("0:00", color = Color.Gray, fontSize = 12.sp)
-                        Text("6:00", color = Color.Gray, fontSize = 12.sp)
-                        Text("12:00", color = Color.Gray, fontSize = 12.sp)
-                        Text("18:00", color = Color.Gray, fontSize = 12.sp)
-                        Text("24:00", color = Color.Gray, fontSize = 12.sp)
-                    }
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("0:00", color = Color.Gray, fontSize = 12.sp)
+                    Text("6:00", color = Color.Gray, fontSize = 12.sp)
+                    Text("12:00", color = Color.Gray, fontSize = 12.sp)
+                    Text("18:00", color = Color.Gray, fontSize = 12.sp)
+                    Text("24:00", color = Color.Gray, fontSize = 12.sp)
                 }
             }
 
             if (selectedIndex >= 0) {
                 Spacer(Modifier.height(10.dp))
-                Text(
-                    "🕒 ${selectedIndex}:00 时的心率：${heartData[selectedIndex]} BPM",
+                Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 10.dp),
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-
-            Spacer(Modifier.height(20.dp))
-
-            // ========================
-            // 4. 详情卡片信息
-            // ========================
-            HeartInfoCard("今日概览", listOf(
-                "静息心率：59 BPM",
-                "运动峰值心率：140 BPM",
-                "平均心率：80 BPM",
-                "夜间波动：55~70 BPM"
-            ))
-
-            Spacer(Modifier.height(20.dp))
-
-            // ========================
-            // 5. 异常提醒设置 (将开关整合进卡片)
-            // ========================
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp)
-            ) {
-                Column(Modifier.padding(20.dp)) {
-                    Text("⚠ 心率异常提醒", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(15.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("高心率阈值：$highLimit BPM")
-                        Text("低心率阈值：$lowLimit BPM")
-                    }
-
-                    Spacer(Modifier.height(15.dp))
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 5.dp))
-                    Spacer(Modifier.height(15.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("开启心率异常提醒", fontSize = 16.sp)
-                        Switch(checked = warning, onCheckedChange = { warning = it })
-                    }
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Filled.AccessTime, contentDescription = "时间", tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        "${selectedIndex}:00 时的心率：${heartData[selectedIndex]} BPM",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
 
             Spacer(Modifier.height(20.dp))
 
-            HeartInfoCard("活动状态分布", listOf(
-                "🚶 步行：85 BPM",
-                "🏃 运动：135 BPM",
-                "😴 睡眠：60 BPM",
-                "😰 压力状态：95 BPM"
-            ))
+            // ========================
+            // 4. 今日概览 (浅蓝背景)
+            // ========================
+            HeartCard("今日概览", Icons.Filled.Info, Color(0xFF1565C0), containerColor = Color(0xFFE3F2FD)) {
+                InfoRow("静息心率", "59 BPM")
+                InfoRow("运动峰值心率", "140 BPM")
+                InfoRow("平均心率", "80 BPM")
+                InfoRow("夜间波动", "55~70 BPM")
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            // ========================
+            // 5. 异常提醒设置 (浅红背景)
+            // ========================
+            HeartCard("心率异常提醒", Icons.Filled.NotificationsActive, Color(0xFFC62828), containerColor = Color(0xFFFFEBEE)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("高心率阈值：$highLimit BPM", color = Color(0xFFC62828))
+                    Text("低心率阈值：$lowLimit BPM", color = Color(0xFFC62828))
+                }
+
+                Spacer(Modifier.height(15.dp))
+                HorizontalDivider(color = Color(0xFFC62828).copy(alpha = 0.2f))
+                Spacer(Modifier.height(15.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("开启心率异常提醒", fontSize = 16.sp, color = Color(0xFFC62828))
+                    Switch(checked = warning, onCheckedChange = { warning = it })
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            // ========================
+            // 6. 活动状态分布 (浅绿背景)
+            // ========================
+            HeartCard("活动状态分布", Icons.Filled.Insights, Color(0xFF2E7D32), containerColor = Color(0xFFE8F5E9)) {
+                InfoRow("步行", "85 BPM", Color(0xFF2E7D32))
+                InfoRow("运动", "135 BPM", Color(0xFF2E7D32))
+                InfoRow("睡眠", "60 BPM", Color(0xFF2E7D32))
+                InfoRow("压力状态", "95 BPM", Color(0xFF2E7D32))
+            }
 
             Spacer(Modifier.height(60.dp))
         }
@@ -289,26 +290,60 @@ fun HeartRateScreen(navController: NavHostController) {
 }
 
 //================================
-// 心率信息卡
+// 通用带图标的Card
 //================================
 @Composable
-fun HeartInfoCard(title: String, items: List<String>) {
+fun HeartCard(
+    title: String,
+    icon: ImageVector,
+    iconTint: Color,
+    containerColor: Color = MaterialTheme.colorScheme.surface,
+    content: @Composable ColumnScope.() -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp)
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = containerColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(15.dp))
-            items.forEach {
-                Text(it, fontSize = 15.sp, modifier = Modifier.padding(vertical = 4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(iconTint.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(icon, contentDescription = title, tint = iconTint, modifier = Modifier.size(20.dp))
+                }
+                Spacer(Modifier.width(10.dp))
+                Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
             }
+            Spacer(Modifier.height(15.dp))
+            content()
         }
     }
 }
 
 //================================
-// 心率曲线 (升级版：带渐变填充和点击标记)
+// 信息行组件 (替代纯Text)
+//================================
+@Composable
+fun InfoRow(label: String, value: String, color: Color = Color.Black) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, fontSize = 15.sp, color = color.copy(alpha = 0.8f))
+        Text(value, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = color)
+    }
+}
+
+//================================
+// 心率曲线 (带渐变填充和点击标记)
 //================================
 @Composable
 fun HeartChart(
@@ -333,7 +368,7 @@ fun HeartChart(
         val max = 140
         val min = 40
 
-        // 1. 绘制背景网格线 (3条横线)
+        // 1. 背景网格线
         val gridColor = Color.Gray.copy(alpha = 0.3f)
         for (i in 1..3) {
             val y = size.height * (i / 4f)
@@ -346,7 +381,7 @@ fun HeartChart(
             )
         }
 
-        // 2. 构建曲线路径
+        // 2. 曲线路径
         val linePath = Path()
         data.forEachIndexed { i, value ->
             val x = i * step
@@ -354,38 +389,35 @@ fun HeartChart(
             if (i == 0) linePath.moveTo(x, y) else linePath.lineTo(x, y)
         }
 
-        // 3. 构建渐变填充区域路径
+        // 3. 渐变填充
         val fillPath = Path().apply {
             addPath(linePath)
             lineTo(size.width, size.height)
             lineTo(0f, size.height)
             close()
         }
-
-        // 绘制渐变填充
         drawPath(
             path = fillPath,
             brush = Brush.verticalGradient(
                 colors = listOf(
-                    Color.Red.copy(alpha = 0.4f),
-                    Color.Red.copy(alpha = 0.0f)
+                    Color(0xFFE53935).copy(alpha = 0.4f),
+                    Color(0xFFE53935).copy(alpha = 0.0f)
                 )
             )
         )
 
-        // 4. 绘制折线本体
+        // 4. 折线本体
         drawPath(
             path = linePath,
-            color = Color.Red,
+            color = Color(0xFFE53935),
             style = Stroke(width = 5f, cap = StrokeCap.Round)
         )
 
-        // 5. 绘制点击选中状态的十字准星和圆点
+        // 5. 十字准星和圆点
         if (selectedIndex >= 0) {
             val x = selectedIndex * step
             val y = size.height - ((data[selectedIndex] - min).toFloat() / (max - min) * size.height)
 
-            // 竖线
             drawLine(
                 color = Color.Gray.copy(alpha = 0.5f),
                 start = Offset(x, 0f),
@@ -393,18 +425,8 @@ fun HeartChart(
                 strokeWidth = 2f,
                 pathEffect = PathEffect.dashPathEffect(floatArrayOf(5f, 5f))
             )
-            // 圆点外圈
-            drawCircle(
-                color = Color.White,
-                radius = 10f,
-                center = Offset(x, y)
-            )
-            // 圆点内圈
-            drawCircle(
-                color = Color.Red,
-                radius = 7f,
-                center = Offset(x, y)
-            )
+            drawCircle(color = Color.White, radius = 10f, center = Offset(x, y))
+            drawCircle(color = Color(0xFFE53935), radius = 7f, center = Offset(x, y))
         }
     }
 }

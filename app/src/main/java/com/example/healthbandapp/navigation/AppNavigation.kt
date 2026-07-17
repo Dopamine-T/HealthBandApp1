@@ -105,17 +105,17 @@ fun AppNavigation() {
 
 // 睡眠
             composable("sleep") {
-                SleepScreen()
+                SleepScreen(navController)
             }
 
 // HRV
             composable("hrv") {
-                HrvScreen()
+                HrvScreen(navController)
             }
 
 // 血压
             composable("bloodPressure") {
-                BloodPressureScreen()
+                BloodPressureScreen(navController)
             }
 
 // 健康报告
