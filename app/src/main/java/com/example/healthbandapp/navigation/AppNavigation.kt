@@ -89,7 +89,7 @@ fun AppNavigation() {
 
             composable("heartRate") {
 
-                HeartRateScreen()
+                HeartRateScreen(navController)
 
             }
 

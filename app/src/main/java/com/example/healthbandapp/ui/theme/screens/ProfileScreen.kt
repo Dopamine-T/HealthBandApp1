@@ -20,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -54,6 +55,7 @@ fun ProfileScreen(
         val uriString = userPrefs.getString("avatar_uri", null)
         mutableStateOf(uriString?.let { Uri.parse(it) })
     }
+}
 
     // 控制修改昵称弹窗的状态
     var showEditDialog by remember { mutableStateOf(false) }
@@ -166,6 +168,8 @@ fun ProfileScreen(
                 }
             }
         }
+    }
+}
 
         // 功能列表区域 (第一组)
         Card(
