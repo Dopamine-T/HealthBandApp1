@@ -10,10 +10,18 @@ import com.example.healthbandapp.ui.theme.screens.HomeScreen
 import com.example.healthbandapp.ui.theme.screens.ProfileScreen
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
+import com.example.healthbandapp.ui.theme.screens.AboutScreen
 import com.example.healthbandapp.ui.theme.screens.AiAssistantScreen
+import com.example.healthbandapp.ui.theme.screens.EmergencyCardScreen
+import com.example.healthbandapp.ui.theme.screens.EmergencyEditScreen
+import com.example.healthbandapp.ui.theme.screens.HealthCareScreen
 import com.example.healthbandapp.ui.theme.screens.HeartRateScreen
+import com.example.healthbandapp.ui.theme.screens.LoginScreen
 import com.example.healthbandapp.ui.theme.screens.ReportScreen
 import com.example.healthbandapp.ui.theme.screens.ScoreScreen
+import com.example.healthbandapp.ui.theme.screens.SportRecordScreen
+import com.example.healthbandapp.ui.theme.screens.SportWeeklyReportScreen
 import com.example.healthbandapp.ui.theme.screens.WarningScreen
 
 
@@ -89,9 +97,90 @@ fun AppNavigation() {
                 DeviceScreen()
             }
 
+            composable("healthData"){
+
+                HealthDataScreen(navController)
+
+            }
+
+
+
+            composable("userInfo"){
+
+                UserInfoScreen()
+
+            }
+
+
+
+
+            composable("sportRecord"){
+
+                SportRecordScreen(
+                    navController= navController)
+
+            }
+
+            composable("emergencyEdit"){
+
+                EmergencyEditScreen(
+
+                    navController= navController
+
+                )
+
+            }
+
+
+
+            composable("achievement"){
+
+                AchievementScreen()
+
+            }
+
+
+
+            composable("emergency"){
+
+                EmergencyCardScreen (
+
+                    navController = navController)
+
+            }
+
+
+
+            composable("care"){
+
+                HealthCareScreen{}
+
+            }
+
+
+
+            composable("weekly"){
+
+                SportWeeklyReportScreen(
+                    navController = navController
+                )
+
+            }
+
+            composable("login") {
+                LoginScreen(navController = navController)
+            }
+
+
+
+            composable("about"){
+
+                AboutScreen(navController = navController)
+
+            }
 
             composable("profile") {
-                ProfileScreen()
+                ProfileScreen(navController = navController)
             }
 
             composable("ai"){
@@ -113,4 +202,24 @@ fun AppNavigation() {
         }
 
     }
+}
+
+@Composable
+fun WeeklyReportScreen() {
+    TODO("Not yet implemented")
+}
+
+@Composable
+fun AchievementScreen() {
+    TODO("Not yet implemented")
+}
+
+@Composable
+fun UserInfoScreen() {
+    TODO("Not yet implemented")
+}
+
+@Composable
+fun HealthDataScreen(x0: NavHostController) {
+    TODO("Not yet implemented")
 }
