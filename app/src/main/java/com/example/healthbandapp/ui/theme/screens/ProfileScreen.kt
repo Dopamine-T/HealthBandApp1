@@ -1,1172 +1,344 @@
 package com.example.healthbandapp.ui.theme.screens
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
+import coil.compose.AsyncImage
 
-
-
-//============================
-// 用户信息
-//============================
-
-data class UserInfo(
-
-    var phone:String="13800138000",
-
-    var name:String="健康用户",
-
-    var avatar:String="👤",
-
-    var age:String="25",
-
-    var gender:String="男",
-
-    var height:String="170",
-
-    var weight:String="65"
-
-)
-
-
-
-
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(){
+fun ProfileScreen(
+    navController: NavController
+) {
+    val context = LocalContext.current
 
+    // 1. 获取全局登录状态和当前账号
+    val globalPrefs = context.getSharedPreferences("global_prefs", Context.MODE_PRIVATE)
+    var isLoggedIn by remember { mutableStateOf(globalPrefs.getBoolean("is_logged_in", false)) }
+    var currentAccount by remember { mutableStateOf(globalPrefs.getString("current_account", "") ?: "") }
 
-    var userInfo by remember {
+    // 2. 获取当前账号的专属存储空间
+    val userPrefsName = if (currentAccount.isNotEmpty()) "user_profile_$currentAccount" else "default_prefs"
+    val userPrefs = context.getSharedPreferences(userPrefsName, Context.MODE_PRIVATE)
 
-        mutableStateOf(
-            UserInfo()
-        )
-
+    // 3. 从专属空间读取昵称和头像
+    var userName by remember(isLoggedIn, currentAccount) {
+        mutableStateOf(userPrefs.getString("user_nickname", "点击设置昵称") ?: "点击设置昵称")
+    }
+    var avatarUri by remember(isLoggedIn, currentAccount) {
+        val uriString = userPrefs.getString("avatar_uri", null)
+        mutableStateOf(uriString?.let { Uri.parse(it) })
     }
 
-
-
-    var page by remember {
-
-        mutableStateOf("main")
-
-    }
-
-
-
-    when(page){
-
-
-
-        "main" -> {
-
-
-            ProfileMain(
-
-                userInfo=userInfo,
-
-                onClick={
-
-                    page=it
-
-                }
-
-            )
-
-        }
-
-
-
-
-        "健康数据"->{
-
-
-            HealthDataPage(
-
-                onClick={
-
-                    page=it
-
-                },
-
-                onBack={
-
-                    page="main"
-
-                }
-
-            )
-
-
-        }
-
-
-
-
-
-        "个人信息"->{
-
-
-            UserInfoPage(
-
-                userInfo=userInfo,
-
-                onEdit={
-
-                    page="编辑资料"
-
-                },
-
-                onBack={
-
-                    page="健康数据"
-
-                }
-
-            )
-
-
-        }
-
-
-
-
-
-        "编辑资料"->{
-
-
-            EditUserPage(
-
-                userInfo=userInfo,
-
-                onSave={
-
-                    userInfo=it
-
-                    page="个人信息"
-
-                }
-
-            )
-
-
-        }
-
-
-
-
-        else->{
-
-
-            DetailPage(
-
-                title=page,
-
-                onBack={
-
-                    page="main"
-
-                }
-
-            )
-
-
-        }
-
-
-    }
-
-
-
-}
-
-
-
-
-
-
-
-
-//============================
-// 个人主页
-//============================
-
-@Composable
-fun ProfileMain(
-
-    userInfo:UserInfo,
-
-    onClick:(String)->Unit
-
-){
-
-
-
-    Column(
-
-        modifier=Modifier
-            .fillMaxSize()
-            .padding(
-                start = 20.dp,
-                end = 20.dp,
-                top = 20.dp,
-                bottom = 120.dp
-            )
-            .verticalScroll(
-                rememberScrollState()
-            )
-
-    ){
-
-
-
-        //头像昵称
-
-        Row(
-
-            verticalAlignment=Alignment.CenterVertically
-
-        ){
-
-
-            Box(
-
-                modifier=Modifier
-                    .size(85.dp)
-                    .clip(CircleShape)
-                    .background(Color.LightGray),
-
-                contentAlignment=Alignment.Center
-
-            ){
-
-
-                Text(
-
-                    text=userInfo.avatar,
-
-                    fontSize=40.sp
-
+    // 控制修改昵称弹窗的状态
+    var showEditDialog by remember { mutableStateOf(false) }
+    var tempNickName by remember { mutableStateOf("") }
+
+    // 检查更新的弹窗变量
+    var showUpdateSheet by remember { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
-
-
+                userPrefs.edit().putString("avatar_uri", uri.toString()).apply()
+                avatarUri = uri
+            } catch (e: SecurityException) {
+                e.printStackTrace()
             }
-
-
-
-            Spacer(
-                Modifier.width(20.dp)
-            )
-
-
-
-            Column{
-
-
-                Text(
-
-                    userInfo.name,
-
-                    fontSize=24.sp,
-
-                    fontWeight=FontWeight.Bold
-
-                )
-
-
-
-                Text(
-
-                    "ID:${userInfo.phone}",
-
-                    color=Color.Gray
-
-                )
-
-
-            }
-
-
         }
+    }
 
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Spacer(Modifier.height(24.dp))
 
-
-
-
-        Spacer(
-            Modifier.height(30.dp)
-        )
-
-
-
-
-        //====================
-        //健康数据入口
-        //====================
-
-
-
-
-
-
-        ProfileItem(
-
-            "🏥 健康数据",
-
-            {
-
-                onClick("健康数据")
-
-            }
-
-        )
-
-
-
-
-
-
-
-
-
-
-
-
-        //====================
-        //其他功能
-        //====================
-
-
-
-
-
-        val list=listOf(
-
-            "🏆 我的成就",
-
-            "🏃 运动记录",
-
-            "🆘 医疗急救卡",
-
-            "💚 健康关怀",
-
-            "📊 运动周报",
-
-            "🎯 活动中心",
-
-            "🔒 隐私管理",
-
-            "💬 帮助与反馈",
-
-            "🔄 检查更新",
-
-            "ℹ️ 关于"
-
-        )
-
-
-
-
-        list.forEach{
-
-
-            ProfileItem(
-
-                it,
-
-                {
-
-                    onClick(it)
-
+        // 顶部头像昵称卡片
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(2.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (!isLoggedIn) { navController.navigate("login") }
+                    }
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(70.dp)
+                        .clip(CircleShape)
+                        .clickable(enabled = isLoggedIn) { launcher.launch(arrayOf("image/*")) }
+                        .background(Color.LightGray),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (avatarUri != null) {
+                        AsyncImage(
+                            model = avatarUri,
+                            contentDescription = "头像",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "默认头像",
+                            modifier = Modifier.size(40.dp),
+                            tint = Color.White
+                        )
+                    }
                 }
 
-            )
+                Spacer(Modifier.width(20.dp))
 
-
-        }
-
-
-
-    }
-
-
-}
-
-
-
-
-
-
-
-
-//============================
-// 健康数据页面
-//============================
-
-
-@Composable
-fun HealthDataPage(
-
-    onClick:(String)->Unit,
-
-    onBack:()->Unit
-
-){
-
-
-    Column(
-
-        modifier=Modifier
-            .fillMaxSize()
-            .padding(20.dp)
-
-    ){
-
-
-        Button(
-            onClick=onBack
-        ){
-
-            Text("返回")
-
-        }
-
-
-
-        Spacer(
-            Modifier.height(20.dp)
-        )
-
-
-
-        Text(
-
-            "健康数据",
-
-            fontSize=26.sp,
-
-            fontWeight=FontWeight.Bold
-
-        )
-
-
-
-        Spacer(
-            Modifier.height(15.dp)
-        )
-
-
-
-
-        val list=listOf(
-
-            "个人信息",
-
-            "🚶 步数",
-
-            "📏 距离",
-
-            "🔥 热量",
-
-            "📅 打卡记录",
-
-            "😴 睡眠",
-
-            "❤️ 心率",
-
-            "😰 压力"
-
-        )
-
-
-
-        list.forEach{
-
-
-            ProfileItem(
-
-                it,
-
-                {
-
-                    onClick(it)
-
+                Column(modifier = Modifier.weight(1f)) {
+                    if (isLoggedIn) {
+                        Text(
+                            text = userName,
+                            modifier = Modifier.clickable {
+                                tempNickName = userName
+                                showEditDialog = true
+                            },
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "手机号: $currentAccount",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    } else {
+                        Text(text = "点击登录", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(4.dp))
+                        Text(text = "登录后享受更多服务", color = Color.Gray, fontSize = 14.sp)
+                    }
                 }
 
-            )
-
-
-        }
-
-
-
-    }
-
-
-}
-
-
-
-
-
-
-
-
-//============================
-// 通用列表
-//============================
-
-@Composable
-fun ProfileItem(
-
-    title:String,
-
-    onClick:()->Unit
-
-){
-
-
-    Card(
-
-        modifier=Modifier
-
-            .fillMaxWidth()
-
-            .padding(vertical=5.dp)
-
-            .clickable {
-
-                onClick()
-
+                if (!isLoggedIn) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowForwardIos,
+                        contentDescription = "箭头",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
             }
-
-    ){
-
-
-        Row(
-
-            modifier=Modifier
-                .fillMaxWidth()
-                .padding(18.dp),
-
-
-            horizontalArrangement=
-                Arrangement.SpaceBetween
-
-
-        ){
-
-
-            Text(
-
-                title,
-
-                fontSize=18.sp
-
-            )
-
-
-
-            Text(
-
-                ">",
-
-                color=Color.Gray
-
-            )
-
-
         }
 
-
-    }
-
-
-}
-
-
-
-
-
-
-
-
-//============================
-//个人信息查看
-//============================
-
-
-@Composable
-fun UserInfoPage(
-
-    userInfo:UserInfo,
-
-    onEdit:()->Unit,
-
-    onBack:()->Unit
-
-){
-
-
-    Column(
-
-        Modifier
-            .fillMaxSize()
-            .padding(20.dp)
-
-    ){
-
-
-
-        Button(
-            onClick=onBack
-        ){
-
-            Text("返回")
-
+        // 功能列表区域 (第一组)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(2.dp)
+        ) {
+            Column {
+                ProfileCard(title = "🏥 健康数据", onClick = { navController.navigate("health") })
+                HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+                ProfileCard(title = "🏃 运动记录", onClick = { navController.navigate("sportRecord") })
+                HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+                ProfileCard(title = "🆘 医疗急救卡", onClick = { navController.navigate("emergency") })
+                HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+                ProfileCard(title = "📊 运动周报", onClick = { navController.navigate("weekly") })
+            }
         }
 
-
-
-        Text(
-
-            "个人信息",
-
-            fontSize=26.sp
-
-        )
-
-
-
-        Spacer(
-            Modifier.height(20.dp)
-        )
-
-
-        Text("头像：${userInfo.avatar}")
-
-        Text("昵称：${userInfo.name}")
-
-        Text("手机号：${userInfo.phone}")
-
-        Text("年龄：${userInfo.age}")
-
-        Text("性别：${userInfo.gender}")
-
-        Text("身高：${userInfo.height}cm")
-
-        Text("体重：${userInfo.weight}kg")
-
-
-
-
-        Button(
-
-            onClick=onEdit
-
-        ){
-
-            Text("修改资料")
-
-        }
-
-
-    }
-
-
-}
-
-
-
-
-
-
-
-
-//============================
-//编辑资料
-//============================
-
-
-@Composable
-fun EditUserPage(
-
-    userInfo:UserInfo,
-
-    onSave:(UserInfo)->Unit
-
-){
-
-
-    var name by remember {
-        mutableStateOf(userInfo.name)
-    }
-
-
-    var avatar by remember {
-        mutableStateOf(userInfo.avatar)
-    }
-
-
-
-    Column(
-
-        Modifier
-            .fillMaxSize()
-            .padding(20.dp)
-
-    ){
-
-
-
-        Text(
-
-            "修改资料",
-
-            fontSize=26.sp
-
-        )
-
-
-
-        Row{
-
-
-            listOf(
-                "👤",
-                "😀",
-                "👨",
-                "👩",
-                "🏃"
-            ).forEach{
-
-
-                Text(
-
-                    it,
-
-                    fontSize=35.sp,
-
-                    modifier=Modifier
-                        .padding(8.dp)
-                        .clickable {
-
-                            avatar=it
-
+        // 其他设置区域 (第二组)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(2.dp)
+        ) {
+            Column {
+                ProfileCard(title = "🔄 检查更新", onClick = { showUpdateSheet = true })
+                HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+                ProfileCard(title = "ℹ️ 关于", onClick = { navController.navigate("about") })
+
+                if (isLoggedIn) {
+                    HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+                    ProfileCard(
+                        title = "🚪 退出登录",
+                        onClick = {
+                            globalPrefs.edit()
+                                .putBoolean("is_logged_in", false)
+                                .remove("current_account")
+                                .apply()
+
+                            isLoggedIn = false
+                            currentAccount = ""
+                            userName = "点击设置昵称"
+                            avatarUri = null
                         }
-
-                )
-
-
+                    )
+                }
             }
-
-
         }
+        Spacer(Modifier.height(16.dp))
+    }
 
+    // 4. 优化后的修改昵称弹窗
+    if (showEditDialog) {
+        Dialog(onDismissRequest = { showEditDialog = false }) {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "修改昵称",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "请输入您的新昵称，最多12个字",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                    Spacer(Modifier.height(20.dp))
 
-
-        OutlinedTextField(
-
-            value=name,
-
-            onValueChange={name=it},
-
-            label={Text("昵称")}
-
-        )
-
-
-
-        Button(
-
-            onClick={
-
-                onSave(
-
-                    userInfo.copy(
-
-                        name=name,
-
-                        avatar=avatar
-
+                    OutlinedTextField(
+                        value = tempNickName,
+                        onValueChange = { if (it.length <= 12) tempNickName = it },
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        placeholder = { Text("请输入昵称") },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
                     )
 
-                )
+                    Spacer(Modifier.height(24.dp))
 
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { showEditDialog = false },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("取消", color = MaterialTheme.colorScheme.onSurface)
+                        }
+
+                        Button(
+                            onClick = {
+                                if (tempNickName.isNotBlank()) {
+                                    userPrefs.edit().putString("user_nickname", tempNickName).apply()
+                                    userName = tempNickName
+                                }
+                                showEditDialog = false
+                            },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("保存", fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
             }
-
-        ){
-
-            Text("保存")
-
         }
-
-
     }
 
-
+    // 底部检查更新弹窗
+    if (showUpdateSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showUpdateSheet = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(25.dp)
+            ) {
+                Text(text = "🔄 检查更新", style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(20.dp))
+                Text(text = "当前版本：v1.0.0")
+                Spacer(Modifier.height(10.dp))
+                Text(text = "已经是最新版本")
+                Spacer(Modifier.height(30.dp))
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { showUpdateSheet = false }
+                ) { Text("确定") }
+                Spacer(Modifier.height(30.dp))
+            }
+        }
+    }
 }
 
-
-
-
-
-
-
-
-//============================
-//详情页面
-//============================
-
-
 @Composable
-fun DetailPage(
-
-    title:String,
-
-    onBack:()->Unit
-
-){
-
-
-    Column(
-
-        Modifier
-            .fillMaxSize()
-            .padding(20.dp)
-
-    ){
-
-
-        Button(
-            onClick=onBack
-        ){
-
-            Text("返回")
-
-        }
-
-
-
-        Spacer(
-            Modifier.height(20.dp)
+fun ProfileCard(
+    title: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 18.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(title, style = MaterialTheme.typography.bodyLarge, fontSize = 16.sp)
+        Icon(
+            imageVector = Icons.Default.ArrowForwardIos,
+            contentDescription = "箭头",
+            tint = Color.Gray,
+            modifier = Modifier.size(14.dp)
         )
-
-
-
-        Text(
-
-            title,
-
-            fontSize=26.sp,
-
-            fontWeight=FontWeight.Bold
-
-        )
-
-
-
-        Spacer(
-            Modifier.height(20.dp)
-        )
-
-
-
-        Text(
-
-            when(title){
-
-
-                "🚶 步数" ->
-                    "今日步数：8560步\n目标：10000步"
-
-
-
-                "📏 距离" ->
-                    "今日距离：6.8km"
-
-
-
-                "🔥 热量" ->
-                    "今日消耗：420kcal"
-
-
-
-                "📅 打卡记录" ->
-                    "连续打卡15天"
-
-
-
-                "😴 睡眠" ->
-                    "睡眠7.5小时\n评分88"
-
-
-
-                "❤️ 心率" ->
-                    "平均心率75bpm"
-
-
-
-                "😰 压力" ->
-                    "压力指数35"
-
-
-
-                "🏆 我的成就" ->
-
-                    """
-        🏆 我的成就
-        
-        已获得勋章：
-        
-        🥇 连续运动达人
-        
-        🥈 步数挑战达人
-        
-        🥉 睡眠管理达人
-        
-        
-        健康积分：
-        1280 分
-        
-        累计运动：
-        68 次
-        
-        连续打卡：
-        15 天
-        """.trimIndent()
-
-
-
-                //运动记录
-
-                "🏃 运动记录" ->
-
-                    """
-        🏃 运动记录
-        
-        今日运动：
-        
-        跑步 3.2 km
-        
-        时间：
-        35 分钟
-        
-        消耗：
-        260 kcal
-        
-        
-        本周：
-        
-        运动次数：
-        5 次
-        
-        总距离：
-        28.6 km
-        
-        总消耗：
-        1800 kcal
-        """.trimIndent()
-
-
-
-                //医疗急救卡
-
-                "🆘 医疗急救卡" ->
-
-                    """
-        🆘 医疗急救卡
-        
-        姓名：
-        健康用户
-        
-        手机：
-        13800138000
-        
-        血型：
-        未设置
-        
-        紧急联系人：
-        未设置
-        
-        过敏史：
-        无
-        """.trimIndent()
-
-
-
-                //健康关怀
-
-                "💚 健康关怀" ->
-
-                    """
-        💚 健康关怀
-        
-        今日健康评分：
-        
-        92 分
-        
-        
-        健康建议：
-        
-        ✓ 保持每天运动
-        
-        ✓ 保证7小时睡眠
-        
-        ✓ 注意饮水
-        """.trimIndent()
-
-
-
-                //运动周报
-
-                "📊 运动周报" ->
-
-                    """
-        📊 运动周报
-        
-        本周统计：
-        
-        
-        步数：
-        56000 步
-        
-        距离：
-        42.5 km
-        
-        消耗：
-        3200 kcal
-        
-        运动：
-        5 次
-        
-        睡眠：
-        平均7.5小时
-        """.trimIndent()
-
-
-
-                //活动中心
-
-                "🎯 活动中心" ->
-
-                    """
-        🎯 活动中心
-        
-        当前活动：
-        
-        30天健康挑战
-        
-        
-        完成进度：
-        
-        ███████░░░
-        
-        70%
-        
-        
-        奖励：
-        
-        健康积分+200
-        """.trimIndent()
-
-
-
-                //隐私管理
-
-                "🔒 隐私管理" ->
-
-                    """
-        🔒 隐私管理
-        
-        健康数据权限：
-        已开启
-        
-        运动数据共享：
-        已关闭
-        
-        位置信息：
-        已关闭
-        """.trimIndent()
-
-
-
-                //帮助反馈
-
-                "💬 帮助与反馈" ->
-
-                    """
-        💬 帮助与反馈
-        
-        常见问题
-        
-        账号问题
-        
-        数据同步问题
-        
-        意见反馈
-        """.trimIndent()
-
-
-
-                //检查更新
-
-                "🔄 检查更新" ->
-
-                    """
-        🔄 检查更新
-        
-        当前版本：
-        
-        v1.0.0
-        
-        已是最新版本
-        """.trimIndent()
-
-
-
-                //关于
-
-                "ℹ️ 关于" ->
-
-                    """
-        ℹ️ 关于
-        
-        健康手环 App
-        
-        版本：
-        v1.0.0
-        
-        用于记录健康、
-        运动和生活数据。
-        """.trimIndent()
-
-
-
-                else ->
-
-                    "功能开发中"
-
-
-
-            }
-
-        )
-
-
     }
-
-
 }
