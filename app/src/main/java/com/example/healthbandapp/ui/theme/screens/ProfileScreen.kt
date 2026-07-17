@@ -1,5 +1,10 @@
 package com.example.healthbandapp.ui.theme.screens
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,23 +13,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.DirectionsRun
-import androidx.compose.material.icons.automirrored.filled.DirectionsWalk
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.HealthAndSafety
-import androidx.compose.material.icons.filled.Height
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.LocalFireDepartment
-import androidx.compose.material.icons.filled.MonitorHeart
-import androidx.compose.material.icons.filled.NightsStay
-import androidx.compose.material.icons.filled.Psychology
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.VerifiedUser
-import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material.icons.filled.ArrowForwardIos
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,427 +22,327 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.util.Locale
+import androidx.compose.ui.window.Dialog
+import androidx.navigation.NavController
+import coil.compose.AsyncImage
 
-// 数据类
-data class UserInfo(
-    var phone: String = "13800138000",
-    var name: String = "健康用户",
-    var age: String = "25",
-    var gender: String = "男",
-    var height: String = "170",
-    var weight: String = "65"
-)
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen() {
-    var userInfo by remember { mutableStateOf(UserInfo()) }
-    var page by remember { mutableStateOf("main") }
+fun ProfileScreen(
+    navController: NavController
+) {
+    val context = LocalContext.current
 
-    when (page) {
-        "main" -> ProfileMain(userInfo) { page = it }
-        "健康报告" -> HealthReportPage(userInfo) { page = "main" }
-        "健康数据" -> HealthDataPage({ page = it }, { page = "main" })
-        "个人信息" -> UserInfoPage(userInfo, { page = "编辑资料" }, { page = "健康数据" })
-        "编辑资料" -> EditUserPage(userInfo, { userInfo = it; page = "个人信息" })
-        else -> DetailPage(title = page) { page = "main" }
+    // 1. 获取全局登录状态和当前账号
+    val globalPrefs = context.getSharedPreferences("global_prefs", Context.MODE_PRIVATE)
+    var isLoggedIn by remember { mutableStateOf(globalPrefs.getBoolean("is_logged_in", false)) }
+    var currentAccount by remember { mutableStateOf(globalPrefs.getString("current_account", "") ?: "") }
+
+    // 2. 获取当前账号的专属存储空间
+    val userPrefsName = if (currentAccount.isNotEmpty()) "user_profile_$currentAccount" else "default_prefs"
+    val userPrefs = context.getSharedPreferences(userPrefsName, Context.MODE_PRIVATE)
+
+    // 3. 从专属空间读取昵称和头像
+    var userName by remember(isLoggedIn, currentAccount) {
+        mutableStateOf(userPrefs.getString("user_nickname", "点击设置昵称") ?: "点击设置昵称")
+    }
+    var avatarUri by remember(isLoggedIn, currentAccount) {
+        val uriString = userPrefs.getString("avatar_uri", null)
+        mutableStateOf(uriString?.let { Uri.parse(it) })
     }
 }
 
-//================================
-// 1. 个人主页
-//================================
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ProfileMain(userInfo: UserInfo, onClick: (String) -> Unit) {
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("我的", fontWeight = FontWeight.Bold) }) }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp)
+    // 控制修改昵称弹窗的状态
+    var showEditDialog by remember { mutableStateOf(false) }
+    var tempNickName by remember { mutableStateOf("") }
+
+    // 检查更新的弹窗变量
+    var showUpdateSheet by remember { mutableStateOf(false) }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+                userPrefs.edit().putString("avatar_uri", uri.toString()).apply()
+                avatarUri = uri
+            } catch (e: SecurityException) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Spacer(Modifier.height(24.dp))
+
+        // 顶部头像昵称卡片
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(2.dp)
         ) {
-            // 头部渐变卡片
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                elevation = CardDefaults.cardElevation(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        if (!isLoggedIn) { navController.navigate("login") }
+                    }
+                    .padding(20.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
-                        .background(Brush.linearGradient(listOf(Color(0xFF1A237E), Color(0xFF3949AB))))
-                        .padding(24.dp)
+                        .size(70.dp)
+                        .clip(CircleShape)
+                        .clickable(enabled = isLoggedIn) { launcher.launch(arrayOf("image/*")) }
+                        .background(Color.LightGray),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Filled.AccountCircle, contentDescription = "头像", tint = Color.White, modifier = Modifier.size(64.dp))
-                        Spacer(Modifier.width(16.dp))
-                        Column {
-                            Text(userInfo.name, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                            Text("ID: ${userInfo.phone}", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
+                    if (avatarUri != null) {
+                        AsyncImage(
+                            model = avatarUri,
+                            contentDescription = "头像",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "默认头像",
+                            modifier = Modifier.size(40.dp),
+                            tint = Color.White
+                        )
+                    }
+                }
+
+                Spacer(Modifier.width(20.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    if (isLoggedIn) {
+                        Text(
+                            text = userName,
+                            modifier = Modifier.clickable {
+                                tempNickName = userName
+                                showEditDialog = true
+                            },
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = "手机号: $currentAccount",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    } else {
+                        Text(text = "点击登录", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(4.dp))
+                        Text(text = "登录后享受更多服务", color = Color.Gray, fontSize = 14.sp)
+                    }
+                }
+
+                if (!isLoggedIn) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowForwardIos,
+                        contentDescription = "箭头",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+        // 功能列表区域 (第一组)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(2.dp)
+        ) {
+            Column {
+                ProfileCard(title = "🏥 健康数据", onClick = { navController.navigate("health") })
+                HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+                ProfileCard(title = "🏃 运动记录", onClick = { navController.navigate("sportRecord") })
+                HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+                ProfileCard(title = "🆘 医疗急救卡", onClick = { navController.navigate("emergency") })
+                HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+                ProfileCard(title = "📊 运动周报", onClick = { navController.navigate("weekly") })
+            }
+        }
+
+        // 其他设置区域 (第二组)
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(2.dp)
+        ) {
+            Column {
+                ProfileCard(title = "🔄 检查更新", onClick = { showUpdateSheet = true })
+                HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+                ProfileCard(title = "ℹ️ 关于", onClick = { navController.navigate("about") })
+
+                if (isLoggedIn) {
+                    HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+                    ProfileCard(
+                        title = "🚪 退出登录",
+                        onClick = {
+                            globalPrefs.edit()
+                                .putBoolean("is_logged_in", false)
+                                .remove("current_account")
+                                .apply()
+
+                            isLoggedIn = false
+                            currentAccount = ""
+                            userName = "点击设置昵称"
+                            avatarUri = null
+                        }
+                    )
+                }
+            }
+        }
+        Spacer(Modifier.height(16.dp))
+    }
+
+    // 4. 优化后的修改昵称弹窗
+    if (showEditDialog) {
+        Dialog(onDismissRequest = { showEditDialog = false }) {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "修改昵称",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "请输入您的新昵称，最多12个字",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                    Spacer(Modifier.height(20.dp))
+
+                    OutlinedTextField(
+                        value = tempNickName,
+                        onValueChange = { if (it.length <= 12) tempNickName = it },
+                        singleLine = true,
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        placeholder = { Text("请输入昵称") },
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(Modifier.height(24.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { showEditDialog = false },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("取消", color = MaterialTheme.colorScheme.onSurface)
+                        }
+
+                        Button(
+                            onClick = {
+                                if (tempNickName.isNotBlank()) {
+                                    userPrefs.edit().putString("user_nickname", tempNickName).apply()
+                                    userName = tempNickName
+                                }
+                                showEditDialog = false
+                            },
+                            modifier = Modifier.weight(1f).height(48.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text("保存", fontWeight = FontWeight.Bold)
                         }
                     }
                 }
             }
-
-            Spacer(Modifier.height(24.dp))
-
-            // 功能列表
-            ProfileListItem("综合健康报告", Icons.Filled.HealthAndSafety, Color(0xFF2E7D32)) { onClick("健康报告") }
-            ProfileListItem("健康数据", Icons.Filled.MonitorHeart, Color(0xFF1565C0)) { onClick("健康数据") }
-
-            Spacer(Modifier.height(16.dp))
-            Text("更多功能", color = Color.Gray, fontSize = 14.sp, modifier = Modifier.padding(start = 8.dp, bottom = 8.dp))
-
-            val otherList = listOf(
-                "运动记录" to Icons.AutoMirrored.Filled.DirectionsRun,
-                "医疗急救卡" to Icons.Filled.WarningAmber,
-                "隐私管理" to Icons.Filled.VerifiedUser,
-                "设置" to Icons.Filled.Settings
-            )
-            otherList.forEach { (title, icon) ->
-                ProfileListItem(title, icon, Color(0xFF5C6BC0)) { onClick(title) }
-            }
-
-            Spacer(Modifier.height(60.dp))
         }
     }
-}
 
-//================================
-// 2. 综合健康报告 (新增核心功能)
-//================================
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HealthReportPage(userInfo: UserInfo, onBack: () -> Unit) {
-    // 计算 BMI
-    val heightM = userInfo.height.toFloatOrNull()?.div(100) ?: 1.7f
-    val weightKg = userInfo.weight.toFloatOrNull() ?: 65f
-    val bmi = weightKg / (heightM * heightM)
-    val bmiStr = String.format(Locale.getDefault(), "%.1f", bmi)
-
-    val bmiStatus = when {
-        bmi < 18.5 -> "偏瘦" to Color(0xFFFFA726)
-        bmi in 18.5..23.9 -> "正常" to Color(0xFF2E7D32)
-        bmi in 24.0..27.9 -> "超重" to Color(0xFFFFA726)
-        else -> "肥胖" to Color(0xFFE53935)
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("综合健康报告", fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") } }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp)
+    // 底部检查更新弹窗
+    if (showUpdateSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showUpdateSheet = false }
         ) {
-            // 健康评分卡 (渐变背景)
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                elevation = CardDefaults.cardElevation(4.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(25.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .background(Brush.linearGradient(listOf(Color(0xFF006064), Color(0xFF26A69A))))
-                        .padding(24.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("今日健康评分", color = Color.White.copy(alpha = 0.9f))
-                    Text("92", fontSize = 56.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    Text("身体状态良好，请继续保持", color = Color.White.copy(alpha = 0.8f), fontSize = 14.sp)
-                }
-            }
-
-            Spacer(Modifier.height(20.dp))
-
-            // BMI 卡片
-            DetailCard("身体质量指数 (BMI)", Icons.Filled.Height, Color(0xFF1565C0)) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Column {
-                        Text("您的 BMI: $bmiStr", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        Text("现代医学标准: 18.5 - 23.9 为正常", fontSize = 12.sp, color = Color.Gray)
-                    }
-                    Text(bmiStatus.first, color = bmiStatus.second, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                }
-            }
-
-            Spacer(Modifier.height(20.dp))
-
-            // 医学健康建议
-            DetailCard("AI 健康干预建议", Icons.Filled.Psychology, Color(0xFF6A1B9A)) {
-                MedicalAdviceRow("心血管风险", "低风险", "静息心率 68 BPM，处于理想范围。建议保持每周3次有氧运动。")
-                MedicalAdviceRow("代谢健康", "良好", "BMI $bmiStr 属于 ${bmiStatus.first}。注意控制每日碳水摄入。")
-                MedicalAdviceRow("睡眠恢复", "优秀", "深睡比例达标。睡前1小时建议远离电子屏幕。")
-                MedicalAdviceRow("压力管理", "正常", "HRV 指标稳定。可尝试每日5分钟正念呼吸。")
-            }
-
-            Spacer(Modifier.height(60.dp))
-        }
-    }
-}
-
-//================================
-// 3. 健康数据列表页
-//================================
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun HealthDataPage(onClick: (String) -> Unit, onBack: () -> Unit) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("健康数据", fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") } }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(20.dp)
-        ) {
-            ProfileListItem("个人信息", Icons.Filled.AccountCircle, Color(0xFF1565C0)) { onClick("个人信息") }
-            ProfileListItem("步数", Icons.AutoMirrored.Filled.DirectionsWalk, Color(0xFF2E7D32)) { onClick("步数") }
-            ProfileListItem("热量", Icons.Filled.LocalFireDepartment, Color(0xFFE65100)) { onClick("热量") }
-            ProfileListItem("睡眠", Icons.Filled.NightsStay, Color(0xFF5C6BC0)) { onClick("睡眠") }
-            ProfileListItem("心率", Icons.Filled.Favorite, Color(0xFFE53935)) { onClick("心率") }
-            ProfileListItem("压力", Icons.Filled.Psychology, Color(0xFF6A1B9A)) { onClick("压力") }
-        }
-    }
-}
-
-//================================
-// 4. 个人信息查看页
-//================================
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun UserInfoPage(userInfo: UserInfo, onEdit: () -> Unit, onBack: () -> Unit) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("个人信息", fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") } }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(20.dp)
-        ) {
-            DetailCard("基础资料", Icons.Filled.AccountCircle, Color(0xFF1565C0)) {
-                InfoRow("姓名", userInfo.name)
-                InfoRow("手机号", userInfo.phone)
-                InfoRow("年龄", "${userInfo.age} 岁")
-                InfoRow("性别", userInfo.gender)
-                InfoRow("身高", "${userInfo.height} cm")
-                InfoRow("体重", "${userInfo.weight} kg")
-            }
-
-            Spacer(Modifier.height(20.dp))
-            Button(onClick = onEdit, modifier = Modifier.fillMaxWidth().height(50.dp), shape = RoundedCornerShape(12.dp)) {
-                Icon(Icons.Filled.Edit, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("修改资料")
+                Text(text = "🔄 检查更新", style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(20.dp))
+                Text(text = "当前版本：v1.0.0")
+                Spacer(Modifier.height(10.dp))
+                Text(text = "已经是最新版本")
+                Spacer(Modifier.height(30.dp))
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { showUpdateSheet = false }
+                ) { Text("确定") }
+                Spacer(Modifier.height(30.dp))
             }
         }
     }
 }
 
-//================================
-// 5. 编辑资料页
-//================================
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditUserPage(userInfo: UserInfo, onSave: (UserInfo) -> Unit) {
-    var name by remember { mutableStateOf(userInfo.name) }
-    var age by remember { mutableStateOf(userInfo.age) }
-    var height by remember { mutableStateOf(userInfo.height) }
-    var weight by remember { mutableStateOf(userInfo.weight) }
-
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("编辑资料", fontWeight = FontWeight.Bold) }) }
-    ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(20.dp)
-        ) {
-            OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("昵称") }, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(12.dp))
-            OutlinedTextField(value = age, onValueChange = { age = it }, label = { Text("年龄") }, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(12.dp))
-            OutlinedTextField(value = height, onValueChange = { height = it }, label = { Text("身高") }, modifier = Modifier.fillMaxWidth())
-            Spacer(Modifier.height(12.dp))
-            OutlinedTextField(value = weight, onValueChange = { weight = it }, label = { Text("体重") }, modifier = Modifier.fillMaxWidth())
-
-            Spacer(Modifier.height(24.dp))
-            Button(
-                onClick = { onSave(userInfo.copy(name = name, age = age, height = height, weight = weight)) },
-                modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) { Text("保存") }
-        }
-    }
-}
-
-//================================
-// 6. 通用详情页
-//================================
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DetailPage(title: String, onBack: () -> Unit) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(title, fontWeight = FontWeight.Bold) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回") } }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(20.dp)
-        ) {
-            when (title) {
-                "步数" -> {
-                    DetailCard("今日步数", Icons.AutoMirrored.Filled.DirectionsWalk, Color(0xFF2E7D32)) {
-                        Text("8,560 步", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-                        Text("目标: 10,000 步", color = Color.Gray)
-                        Spacer(Modifier.height(10.dp))
-                        LinearProgressIndicator(
-                            progress = { 0.85f },
-                            modifier = Modifier.fillMaxWidth().height(8.dp).clip(CircleShape)
-                        )
-                    }
-                }
-                "心率" -> {
-                    DetailCard("今日心率", Icons.Filled.Favorite, Color(0xFFE53935)) {
-                        InfoRow("平均心率", "75 BPM")
-                        InfoRow("最高心率", "132 BPM")
-                        InfoRow("最低心率", "58 BPM")
-                    }
-                }
-                "睡眠" -> {
-                    DetailCard("昨晚睡眠", Icons.Filled.NightsStay, Color(0xFF5C6BC0)) {
-                        InfoRow("总时长", "7小时35分钟")
-                        InfoRow("深睡比例", "28%")
-                        InfoRow("睡眠评分", "89 分")
-                    }
-                }
-                "热量" -> {
-                    DetailCard("热量消耗", Icons.Filled.LocalFireDepartment, Color(0xFFE65100)) {
-                        Text("420 kcal", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-                        Text("基础代谢: 1,500 kcal", color = Color.Gray)
-                    }
-                }
-                "压力" -> {
-                    DetailCard("压力监测", Icons.Filled.Psychology, Color(0xFF6A1B9A)) {
-                        Text("35", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
-                        Text("压力水平: 低", color = Color.Gray)
-                    }
-                }
-                "运动记录" -> {
-                    DetailCard("运动记录", Icons.AutoMirrored.Filled.DirectionsRun, Color(0xFF1565C0)) {
-                        InfoRow("今日跑步", "3.2 km")
-                        InfoRow("运动时长", "35 分钟")
-                        InfoRow("消耗热量", "260 kcal")
-                    }
-                }
-                "医疗急救卡" -> {
-                    DetailCard("医疗急救卡", Icons.Filled.WarningAmber, Color(0xFFE53935)) {
-                        InfoRow("血型", "未设置")
-                        InfoRow("紧急联系人", "未设置")
-                        InfoRow("过敏史", "无")
-                    }
-                }
-                else -> {
-                    DetailCard(title, Icons.Filled.History, Color(0xFF5C6BC0)) {
-                        Text("功能开发中...")
-                    }
-                }
-            }
-        }
-    }
-}
-
-//================================
-// 通用组件库
-//================================
-@Composable
-fun ProfileListItem(title: String, icon: ImageVector, iconTint: Color, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(2.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier.size(36.dp).clip(CircleShape).background(iconTint.copy(alpha = 0.1f)),
-                contentAlignment = Alignment.Center
-            ) { Icon(icon, contentDescription = title, tint = iconTint, modifier = Modifier.size(20.dp)) }
-
-            Spacer(Modifier.width(16.dp))
-            Text(title, fontSize = 16.sp, modifier = Modifier.weight(1f))
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color.Gray)
-        }
-    }
-}
-
-@Composable
-fun DetailCard(title: String, icon: ImageVector, iconTint: Color, content: @Composable ColumnScope.() -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier.size(32.dp).clip(CircleShape).background(iconTint.copy(alpha = 0.1f)),
-                    contentAlignment = Alignment.Center
-                ) { Icon(icon, contentDescription = title, tint = iconTint, modifier = Modifier.size(20.dp)) }
-                Spacer(Modifier.width(10.dp))
-                Text(title, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            }
-            Spacer(Modifier.height(15.dp))
-            content()
-        }
-    }
-}
-
-@Composable
-fun InfoRow(label: String, value: String) {
+fun ProfileCard(
+    title: String,
+    onClick: () -> Unit
+) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 16.dp, vertical = 18.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label, color = Color.Gray, fontSize = 15.sp)
-        Text(value, fontSize = 15.sp, fontWeight = FontWeight.Medium)
-    }
-}
-
-@Composable
-fun MedicalAdviceRow(category: String, status: String, advice: String) {
-    Column(modifier = Modifier.padding(vertical = 10.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(category, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-            Text(status, color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold, fontSize = 15.sp)
-        }
-        Spacer(Modifier.height(4.dp))
-        Text(advice, fontSize = 13.sp, color = Color.Gray, lineHeight = 18.sp)
+        Text(title, style = MaterialTheme.typography.bodyLarge, fontSize = 16.sp)
+        Icon(
+            imageVector = Icons.Default.ArrowForwardIos,
+            contentDescription = "箭头",
+            tint = Color.Gray,
+            modifier = Modifier.size(14.dp)
+        )
     }
 }
