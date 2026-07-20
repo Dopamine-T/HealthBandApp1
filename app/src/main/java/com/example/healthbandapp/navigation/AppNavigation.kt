@@ -13,17 +13,20 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import com.example.healthbandapp.ui.theme.screens.AboutScreen
 import com.example.healthbandapp.ui.theme.screens.AiAssistantScreen
+import com.example.healthbandapp.ui.theme.screens.BloodPressureScreen
 import com.example.healthbandapp.ui.theme.screens.EmergencyCardScreen
 import com.example.healthbandapp.ui.theme.screens.EmergencyEditScreen
 import com.example.healthbandapp.ui.theme.screens.HealthCareScreen
 import com.example.healthbandapp.ui.theme.screens.HeartRateScreen
+import com.example.healthbandapp.ui.theme.screens.HrvScreen
 import com.example.healthbandapp.ui.theme.screens.LoginScreen
+import com.example.healthbandapp.ui.theme.screens.OxygenScreen
 import com.example.healthbandapp.ui.theme.screens.ReportScreen
 import com.example.healthbandapp.ui.theme.screens.ScoreScreen
+import com.example.healthbandapp.ui.theme.screens.SleepScreen
 import com.example.healthbandapp.ui.theme.screens.SportRecordScreen
 import com.example.healthbandapp.ui.theme.screens.SportWeeklyReportScreen
 import com.example.healthbandapp.ui.theme.screens.WarningScreen
-
 
 @Composable
 fun AppNavigation() {
@@ -31,9 +34,7 @@ fun AppNavigation() {
     val navController = rememberNavController()
 
     Scaffold(
-
         bottomBar = {
-
             BottomBar(
                 currentRoute =
                     navController.currentBackStackEntryAsState()
@@ -42,55 +43,53 @@ fun AppNavigation() {
                         ?.route,
 
                 onNavigate = { route ->
-
                     navController.navigate(route) {
-
                         popUpTo(navController.graph.startDestinationId) {
                             saveState = true
                         }
-
                         launchSingleTop = true
-
                         restoreState = true
                     }
-
                 }
             )
-
         }
-
     ){ padding ->
 
-
         NavHost(
-
             navController = navController,
-
             startDestination = "home",
-
-            modifier = Modifier
-                .padding(padding)
-
+            modifier = Modifier.padding(padding)
         ) {
 
-
             composable("home") {
-                HomeScreen(
-                    navController = navController
-                )
+                HomeScreen(navController = navController)
             }
-
 
             composable("health") {
                 HealthScreen(
-                    navController = navController
+                    navController = navController,
+                    onBack = { navController.popBackStack() }
                 )
             }
 
             composable("heartRate") {
-
                 HeartRateScreen(navController)
+            }
 
+            composable("oxygen") {
+                OxygenScreen(navController)
+            }
+
+            composable("sleep") {
+                SleepScreen(navController)
+            }
+
+            composable("hrv") {
+                HrvScreen(navController)
+            }
+
+            composable("bloodPressure") {
+                BloodPressureScreen(navController)
             }
 
             composable("device") {
@@ -98,85 +97,47 @@ fun AppNavigation() {
             }
 
             composable("healthData"){
-
                 HealthDataScreen(navController)
-
             }
-
-
 
             composable("userInfo"){
-
                 UserInfoScreen()
-
             }
 
-
-
-
             composable("sportRecord"){
-
-                SportRecordScreen(
-                    navController= navController)
-
+                SportRecordScreen(navController= navController)
             }
 
             composable("emergencyEdit"){
-
-                EmergencyEditScreen(
-
-                    navController= navController
-
-                )
-
+                EmergencyEditScreen(navController= navController)
             }
-
-
 
             composable("achievement"){
-
                 AchievementScreen()
-
             }
-
-
 
             composable("emergency"){
-
-                EmergencyCardScreen (
-
-                    navController = navController)
-
+                EmergencyCardScreen(navController = navController)
             }
 
-
-
+            // ✅ 修复点：补全 navController 参数
             composable("care"){
-
-                HealthCareScreen{}
-
+                HealthCareScreen(
+                    navController = navController,
+                    onBack = { navController.popBackStack() }
+                )
             }
-
-
 
             composable("weekly"){
-
-                SportWeeklyReportScreen(
-                    navController = navController
-                )
-
+                SportWeeklyReportScreen(navController = navController)
             }
 
             composable("login") {
                 LoginScreen(navController = navController)
             }
 
-
-
             composable("about"){
-
                 AboutScreen(navController = navController)
-
             }
 
             composable("profile") {
@@ -200,7 +161,6 @@ fun AppNavigation() {
             }
 
         }
-
     }
 }
 
