@@ -1,65 +1,75 @@
 package com.example.healthbandapp.navigation
 
+
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.navigation.compose.*
-import com.example.healthbandapp.ui.components.BottomBar
-import com.example.healthbandapp.ui.theme.screens.DeviceScreen
-import com.example.healthbandapp.ui.theme.screens.HealthScreen
-import com.example.healthbandapp.ui.theme.screens.HomeScreen
-import com.example.healthbandapp.ui.theme.screens.ProfileScreen
-import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import com.example.healthbandapp.ui.theme.screens.AboutScreen
-import com.example.healthbandapp.ui.theme.screens.AiAssistantScreen
-import com.example.healthbandapp.ui.theme.screens.EmergencyCardScreen
-import com.example.healthbandapp.ui.theme.screens.EmergencyEditScreen
-import com.example.healthbandapp.ui.theme.screens.HealthCareScreen
-import com.example.healthbandapp.ui.theme.screens.HeartRateScreen
-import com.example.healthbandapp.ui.theme.screens.LoginScreen
-import com.example.healthbandapp.ui.theme.screens.ReportScreen
-import com.example.healthbandapp.ui.theme.screens.ScoreScreen
-import com.example.healthbandapp.ui.theme.screens.SportRecordScreen
-import com.example.healthbandapp.ui.theme.screens.SportWeeklyReportScreen
-import com.example.healthbandapp.ui.theme.screens.WarningScreen
+import androidx.navigation.compose.*
+
+import com.example.healthbandapp.ui.components.BottomBar
+import com.example.healthbandapp.ui.theme.screens.*
 
 
 @Composable
 fun AppNavigation() {
 
+
     val navController = rememberNavController()
+
+
 
     Scaffold(
 
         bottomBar = {
 
+
             BottomBar(
+
                 currentRoute =
-                    navController.currentBackStackEntryAsState()
+                    navController
+                        .currentBackStackEntryAsState()
                         .value
                         ?.destination
                         ?.route,
 
+
                 onNavigate = { route ->
 
-                    navController.navigate(route) {
 
-                        popUpTo(navController.graph.startDestinationId) {
+                    navController.navigate(route){
+
+
+                        popUpTo(
+                            navController.graph.startDestinationId
+                        ){
+
                             saveState = true
+
                         }
+
 
                         launchSingleTop = true
 
+
                         restoreState = true
+
+
                     }
 
+
                 }
+
+
             )
+
 
         }
 
+
     ){ padding ->
+
 
 
         NavHost(
@@ -68,158 +78,275 @@ fun AppNavigation() {
 
             startDestination = "home",
 
-            modifier = Modifier
-                .padding(padding)
+            modifier =
+                Modifier.padding(padding)
 
-        ) {
+        ){
 
 
-            composable("home") {
-                HomeScreen(
-                    navController = navController
-                )
+
+            // 首页
+
+            composable("home"){
+
+                HomeScreen(navController)
+
+            }
+
+            composable("device"){
+
+                DeviceScreen()
+
             }
 
 
-            composable("health") {
-                HealthScreen(
-                    navController = navController
-                )
+
+
+            // 健康主页
+
+            composable("health"){
+
+                HealthScreen(navController)
+
             }
 
-            composable("heartRate") {
+
+
+
+
+            // 心率
+
+            composable("heartRate"){
 
                 HeartRateScreen(navController)
 
             }
 
-            composable("device") {
-                DeviceScreen()
-            }
-
-            composable("healthData"){
-
-                HealthDataScreen(navController)
-
-            }
 
 
 
-            composable("userInfo"){
 
-                UserInfoScreen()
+            // 血氧
+
+            composable("oxygen"){
+
+                OxygenScreen(navController)
 
             }
 
 
 
 
-            composable("sportRecord"){
 
-                SportRecordScreen(
-                    navController= navController)
+            // 睡眠
 
-            }
+            composable("sleep"){
 
-            composable("emergencyEdit"){
-
-                EmergencyEditScreen(
-
-                    navController= navController
-
-                )
+                SleepScreen(navController)
 
             }
 
 
 
-            composable("achievement"){
 
-                AchievementScreen()
+
+            // 体温
+
+            composable("temperature"){
+
+                TemperatureScreen(navController)
+
+            }
+
+
+
+
+
+            // HRV
+
+            composable("hrv"){
+
+                HrvScreen(navController)
 
             }
 
 
 
-            composable("emergency"){
 
-                EmergencyCardScreen (
 
-                    navController = navController)
+            // 血压
+
+            composable("bloodPressure"){
+
+                BloodPressureScreen(navController)
 
             }
 
 
+
+
+
+            // 健康报告
+
+            composable("report"){
+
+                ReportScreen()
+
+            }
+
+
+
+
+
+            // 健康护理 ⭐
 
             composable("care"){
 
-                HealthCareScreen{}
+
+                HealthCareScreen(
+
+                    onBack = {
+
+                        navController.popBackStack()
+
+                    }
+
+                )
+
 
             }
 
 
+
+
+
+            // 运动记录
+
+            composable("sportRecord"){
+
+                SportRecordScreen(navController)
+
+            }
+
+
+
+
+
+            // 医疗急救卡
+
+            composable("emergency"){
+
+                EmergencyCardScreen(navController)
+
+            }
+
+
+
+
+
+            // 编辑急救信息
+
+            composable("emergencyEdit"){
+
+                EmergencyEditScreen(navController)
+
+            }
+
+
+
+
+
+            // 周报
 
             composable("weekly"){
 
-                SportWeeklyReportScreen(
-                    navController = navController
-                )
+                SportWeeklyReportScreen(navController)
 
             }
 
-            composable("login") {
-                LoginScreen(navController = navController)
+
+
+
+
+            // 登录
+
+            composable("login"){
+
+                LoginScreen(navController)
+
             }
 
 
+
+
+
+            // 个人中心
+
+            composable("profile"){
+
+                ProfileScreen(navController)
+
+            }
+
+
+
+
+
+            // AI
+
+            composable("ai"){
+
+                AiAssistantScreen()
+
+            }
+
+
+
+
+
+            // 预警
+
+            composable("warning"){
+
+                WarningScreen()
+
+            }
+
+
+
+
+
+            // 评分
+
+            composable("score"){
+
+                ScoreScreen()
+
+            }
+
+
+
+
+
+            // 关于
 
             composable("about"){
 
-                AboutScreen(navController = navController)
+                AboutScreen(navController)
 
             }
 
-            composable("profile") {
-                ProfileScreen(navController = navController)
-            }
 
-            composable("ai"){
-                AiAssistantScreen()
-            }
-
-            composable("report"){
-                ReportScreen()
-            }
-
-            composable("warning"){
-                WarningScreen()
-            }
-
-            composable("score"){
-                ScoreScreen()
-            }
 
         }
 
+
     }
+
+
 }
 
 @Composable
-fun WeeklyReportScreen() {
-    TODO("Not yet implemented")
-}
-
-@Composable
-fun AchievementScreen() {
-    TODO("Not yet implemented")
-}
-
-@Composable
-fun UserInfoScreen() {
-    TODO("Not yet implemented")
-}
-
-@Composable
-fun HealthDataScreen(x0: NavHostController) {
+fun TemperatureScreen(x0: NavHostController) {
     TODO("Not yet implemented")
 }
