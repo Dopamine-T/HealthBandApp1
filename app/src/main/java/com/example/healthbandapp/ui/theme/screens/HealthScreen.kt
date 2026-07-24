@@ -45,7 +45,5 @@ fun HealthScreen(
         BloodPressureCard(navController)
         Spacer(modifier = Modifier.height(16.dp))
 
-        ReportSummaryCard(navController)
-        Spacer(modifier = Modifier.height(20.dp))
     }
 }
