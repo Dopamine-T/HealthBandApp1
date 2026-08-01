@@ -2,23 +2,17 @@ package com.example.healthbandapp.ui.theme.screens
 
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import androidx.navigation.NavController
+
 
 @Composable
 fun HomeScreen(navController: NavController) {
@@ -28,7 +22,9 @@ fun HomeScreen(navController: NavController) {
 
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp),
+            .padding(20.dp)
+            // ⭐增加屏幕上下滑动
+            .verticalScroll(rememberScrollState()),
 
         verticalArrangement = Arrangement.spacedBy(16.dp)
 
@@ -54,8 +50,6 @@ fun HomeScreen(navController: NavController) {
 
 
 
-        // 健康评分
-
         DashboardCard(
 
             title = "⭐ 健康评分",
@@ -68,14 +62,9 @@ fun HomeScreen(navController: NavController) {
                 navController.navigate("score")
             }
 
-
-
         )
 
 
-
-
-        // AI助手
 
         DashboardCard(
 
@@ -93,10 +82,6 @@ fun HomeScreen(navController: NavController) {
 
 
 
-
-
-        // 异常提醒
-
         DashboardCard(
 
             title = "⚠️ 异常提醒",
@@ -113,10 +98,6 @@ fun HomeScreen(navController: NavController) {
 
 
 
-
-
-        // 今日报告
-
         DashboardCard(
 
             title = "📋 今日报告",
@@ -129,15 +110,9 @@ fun HomeScreen(navController: NavController) {
                 navController.navigate("report")
             }
 
-
-
         )
 
 
-
-
-
-        // 快捷操作
 
         Text(
 
@@ -175,6 +150,12 @@ fun HomeScreen(navController: NavController) {
         }
 
 
+        // 测试滑动效果，可以后续删除
+        Spacer(
+            modifier = Modifier.height(300.dp)
+        )
+
+
     }
 
 
@@ -191,30 +172,49 @@ fun DashboardCard(
     onClick: () -> Unit
 ) {
 
+
     Card(
+
         modifier = Modifier
+
             .fillMaxWidth()
+
             .clickable {
-                onClick.invoke()
+
+                onClick()
+
             }
+
     ) {
 
+
         Column(
+
             modifier = Modifier.padding(20.dp)
+
         ) {
 
-            Text(
-                text = title,
-                color = color
-            )
 
             Text(
-                text = content
+
+                text = title,
+
+                color = color
+
             )
+
+
+            Text(
+
+                text = content
+
+            )
+
 
         }
 
     }
+
 }
 
 
@@ -222,9 +222,13 @@ fun DashboardCard(
 
 @Composable
 fun SmallActionButton(
+
     text:String,
+
     modifier: Modifier = Modifier
+
 ){
+
 
     Button(
 

@@ -29,6 +29,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.healthbandapp.api.RetrofitInstance
+import com.example.healthbandapp.model.UserProfile
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,13 +49,52 @@ fun ProfileScreen(
     val userPrefsName = if (currentAccount.isNotEmpty()) "user_profile_$currentAccount" else "default_prefs"
     val userPrefs = context.getSharedPreferences(userPrefsName, Context.MODE_PRIVATE)
 
-    // 3. 从专属空间读取昵称和头像
-    var userName by remember(isLoggedIn, currentAccount) {
-        mutableStateOf(userPrefs.getString("user_nickname", "点击设置昵称") ?: "点击设置昵称")
+    // 从服务器获取用户信息
+
+    var userProfile by remember {
+
+        mutableStateOf<UserProfile?>(null)
+
     }
-    var avatarUri by remember(isLoggedIn, currentAccount) {
-        val uriString = userPrefs.getString("avatar_uri", null)
-        mutableStateOf(uriString?.let { Uri.parse(it) })
+
+
+
+    LaunchedEffect(isLoggedIn) {
+
+
+        if(isLoggedIn){
+
+
+            try {
+
+
+                val response =
+
+                    RetrofitInstance.userApi.getUserProfile()
+
+
+
+                if(response.code == 200){
+
+
+                    userProfile = response.data
+
+
+                }
+
+
+            }catch(e:Exception){
+
+
+                e.printStackTrace()
+
+
+            }
+
+
+        }
+
+
     }
 
     // 控制修改昵称弹窗的状态
@@ -72,7 +114,7 @@ fun ProfileScreen(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
                 userPrefs.edit().putString("avatar_uri", uri.toString()).apply()
-                avatarUri = uri
+
             } catch (e: SecurityException) {
                 e.printStackTrace()
             }
@@ -115,21 +157,41 @@ fun ProfileScreen(
                         .clickable(enabled = isLoggedIn) { launcher.launch(arrayOf("image/*")) }
                         .background(Color.LightGray),
                     contentAlignment = Alignment.Center
-                ) {
-                    if (avatarUri != null) {
+                )
+
+                {
+                    if(userProfile != null){
+
+
                         AsyncImage(
-                            model = avatarUri,
+
+                            model = userProfile!!.avatar,
+
                             contentDescription = "头像",
+
                             modifier = Modifier.fillMaxSize(),
+
                             contentScale = ContentScale.Crop
+
                         )
-                    } else {
+
+
+                    }else{
+
+
                         Icon(
+
                             imageVector = Icons.Default.Person,
+
                             contentDescription = "默认头像",
+
                             modifier = Modifier.size(40.dp),
+
                             tint = Color.White
+
                         )
+
+
                     }
                 }
 
@@ -138,19 +200,33 @@ fun ProfileScreen(
                 Column(modifier = Modifier.weight(1f)) {
                     if (isLoggedIn) {
                         Text(
-                            text = userName,
+
+                            text = userProfile?.username ?: "加载中...",
+
                             modifier = Modifier.clickable {
-                                tempNickName = userName
+
+                                tempNickName =
+                                    userProfile?.username ?: ""
+
                                 showEditDialog = true
+
                             },
+
                             fontSize = 22.sp,
+
                             fontWeight = FontWeight.Bold
+
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = "手机号: $currentAccount",
+
+                            text =
+                                "手机号: ${userProfile?.phone ?: ""}",
+
                             color = Color.Gray,
+
                             fontSize = 14.sp
+
                         )
                     } else {
                         Text(text = "点击登录", fontSize = 22.sp, fontWeight = FontWeight.Bold)
@@ -214,8 +290,9 @@ fun ProfileScreen(
 
                             isLoggedIn = false
                             currentAccount = ""
-                            userName = "点击设置昵称"
-                            avatarUri = null
+                            isLoggedIn = false
+                            currentAccount = ""
+                            userProfile = null
                         }
                     )
                 }
@@ -288,7 +365,7 @@ fun ProfileScreen(
                             onClick = {
                                 if (tempNickName.isNotBlank()) {
                                     userPrefs.edit().putString("user_nickname", tempNickName).apply()
-                                    userName = tempNickName
+
                                 }
                                 showEditDialog = false
                             },

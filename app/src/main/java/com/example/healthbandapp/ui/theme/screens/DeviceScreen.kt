@@ -18,107 +18,210 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+import com.example.healthbandapp.api.RetrofitInstance
+import com.example.healthbandapp.model.DeviceInfo
+
 
 
 @Composable
 fun DeviceScreen() {
 
 
-    var isConnected by remember {
-        mutableStateOf(true)
+    var deviceInfo by remember {
+
+        mutableStateOf<DeviceInfo?>(null)
+
     }
+
 
     var isSyncing by remember {
+
         mutableStateOf(false)
+
     }
 
+
     var isFinding by remember {
+
         mutableStateOf(false)
+
     }
+
+
+
+    var isConnected by remember {
+
+        mutableStateOf(true)
+
+    }
+
 
 
     var wristRaiseEnabled by remember {
+
         mutableStateOf(true)
+
     }
+
 
     var sedentaryReminderEnabled by remember {
+
         mutableStateOf(false)
+
     }
+
 
     var doNotDisturbEnabled by remember {
+
         mutableStateOf(false)
+
     }
 
 
-    val deviceName = "MyBand X1"
+
     val battery = 78
+
+
+
+
+    /*
+    获取设备信息
+     */
+
+    LaunchedEffect(Unit){
+
+
+        try {
+
+
+            val result =
+
+                RetrofitInstance
+                    .deviceApi
+                    .getDeviceInfo()
+
+
+
+            deviceInfo =
+
+                result.data
+
+
+
+        }catch(e:Exception){
+
+
+            println(
+                "设备信息请求失败:${e.message}"
+            )
+
+
+        }
+
+
+
+    }
+
+
+
+
+    val deviceName =
+
+        deviceInfo?.deviceName
+            ?: "加载中..."
+
+
+
 
 
 
     Column(
 
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                Color(0xFFF7F8FC)
-            )
-            .padding(16.dp)
-            .verticalScroll(
-                rememberScrollState()
-            ),
+        modifier =
+            Modifier
 
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxSize()
 
-    ) {
+                .background(
+                    Color(0xFFF7F8FC)
+                )
+
+                .padding(16.dp)
+
+                .verticalScroll(
+                    rememberScrollState()
+                ),
+
+
+        verticalArrangement =
+            Arrangement.spacedBy(16.dp)
+
+    ){
 
 
 
         /*
-        设备状态卡
+        设备状态
          */
+
 
         Card(
 
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier =
+                Modifier.fillMaxWidth(),
 
-            shape = RoundedCornerShape(26.dp),
+            shape =
+                RoundedCornerShape(26.dp),
 
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFE8F5E9)
-            ),
 
-            elevation = CardDefaults.cardElevation(
-                5.dp
-            )
+            colors =
+                CardDefaults.cardColors(
+
+                    containerColor =
+                        Color(0xFFE8F5E9)
+
+                ),
+
+
+            elevation =
+                CardDefaults.cardElevation(
+                    5.dp
+                )
+
 
         ){
 
 
             Row(
 
-                modifier = Modifier
-                    .padding(20.dp),
+                modifier =
+                    Modifier.padding(20.dp),
 
-                verticalAlignment = Alignment.CenterVertically
+
+                verticalAlignment =
+                    Alignment.CenterVertically
+
 
             ){
 
 
                 Icon(
 
-                    imageVector =
-                        Icons.Default.Bluetooth,
+                    Icons.Default.Bluetooth,
 
-                    contentDescription = null,
+                    null,
+
 
                     tint =
                         Color(0xFF43A047),
 
+
                     modifier =
                         Modifier.size(40.dp)
 
+
                 )
+
 
 
                 Spacer(
@@ -126,14 +229,17 @@ fun DeviceScreen() {
                 )
 
 
-                Column {
+
+                Column{
 
 
                     Text(
 
-                        text = deviceName,
+                        deviceName,
 
-                        fontSize = 22.sp,
+                        fontSize =
+                            22.sp,
+
 
                         fontWeight =
                             FontWeight.Bold
@@ -141,30 +247,43 @@ fun DeviceScreen() {
                     )
 
 
+
                     Spacer(
                         Modifier.height(6.dp)
                     )
 
 
+
                     Text(
 
-                        text =
-                            if(isConnected)
-                                "● 已连接"
-                            else
-                                "● 未连接",
+                        if(isConnected)
+
+                            "● 已连接"
+
+                        else
+
+                            "● 未连接",
+
 
                         color =
+
                             if(isConnected)
+
                                 Color(0xFF43A047)
+
                             else
+
                                 Color.Gray,
 
-                        fontSize = 16.sp
+
+                        fontSize =
+                            16.sp
 
                     )
 
+
                 }
+
 
             }
 
@@ -175,17 +294,21 @@ fun DeviceScreen() {
 
 
 
+
         /*
-        电池卡片
+        电池
          */
 
 
         Card(
 
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+                Modifier.fillMaxWidth(),
+
 
             shape =
                 RoundedCornerShape(26.dp),
+
 
             colors =
                 CardDefaults.cardColors(
@@ -194,6 +317,7 @@ fun DeviceScreen() {
                         Color(0xFFEAF7FF)
 
                 )
+
 
         ){
 
@@ -206,43 +330,18 @@ fun DeviceScreen() {
             ){
 
 
-                Row(
+                Text(
 
-                    verticalAlignment =
-                        Alignment.CenterVertically
+                    "🔋 电池状态",
 
-                ){
-
-
-                    Icon(
-
-                        Icons.Default.BatteryFull,
-
-                        contentDescription = null,
-
-                        tint =
-                            Color(0xFF2196F3)
-
-                    )
+                    fontSize =
+                        20.sp,
 
 
-                    Spacer(
-                        Modifier.width(10.dp)
-                    )
+                    fontWeight =
+                        FontWeight.Bold
 
-
-                    Text(
-
-                        "电池状态",
-
-                        fontSize = 18.sp,
-
-                        fontWeight =
-                            FontWeight.Bold
-
-                    )
-
-                }
+                )
 
 
 
@@ -251,14 +350,18 @@ fun DeviceScreen() {
                 )
 
 
+
                 Text(
 
                     "$battery%",
 
-                    fontSize = 36.sp,
+                    fontSize =
+                        36.sp,
+
 
                     fontWeight =
                         FontWeight.Bold,
+
 
                     color =
                         Color(0xFF2196F3)
@@ -266,26 +369,26 @@ fun DeviceScreen() {
                 )
 
 
+
                 LinearProgressIndicator(
 
                     progress = {
+
                         battery / 100f
+
                     },
 
 
                     modifier =
                         Modifier
+
                             .fillMaxWidth()
+
                             .height(10.dp)
+
                             .clip(
                                 RoundedCornerShape(10.dp)
-                            ),
-
-                    color =
-                        Color(0xFF2196F3),
-
-                    trackColor =
-                        Color(0xFFDDEEFF)
+                            )
 
                 )
 
@@ -294,22 +397,20 @@ fun DeviceScreen() {
 
 
         }
+        /*
+设备信息
+ */
+
+        DeviceInfoCard(
+            deviceInfo
+        )
 
 
 
 
 
         /*
-        设备信息
-         */
-
-
-        DeviceInfoCard()
-
-
-
-        /*
-        操作按钮
+        同步数据
          */
 
 
@@ -331,6 +432,7 @@ fun DeviceScreen() {
 
             }
 
+
         ){
 
 
@@ -346,15 +448,29 @@ fun DeviceScreen() {
 
 
             Text(
+
                 if(isSyncing)
+
                     "正在同步..."
+
                 else
+
                     "同步数据"
+
             )
+
 
         }
 
 
+
+
+
+
+
+        /*
+        查找设备
+         */
 
 
         Button(
@@ -384,12 +500,16 @@ fun DeviceScreen() {
 
             }
 
+
         ){
 
 
             Icon(
+
                 Icons.Default.VolumeUp,
+
                 null
+
             )
 
 
@@ -398,14 +518,19 @@ fun DeviceScreen() {
             )
 
 
+
             Text(
 
                 if(isFinding)
+
                     "正在查找..."
+
                 else
+
                     "查找手环"
 
             )
+
 
         }
 
@@ -413,8 +538,11 @@ fun DeviceScreen() {
 
 
 
+
+
+
         /*
-        设置
+        智能设置
          */
 
 
@@ -423,8 +551,10 @@ fun DeviceScreen() {
             modifier =
                 Modifier.fillMaxWidth(),
 
+
             shape =
                 RoundedCornerShape(26.dp)
+
 
         ){
 
@@ -441,7 +571,9 @@ fun DeviceScreen() {
 
                     "⚙️ 智能设置",
 
-                    fontSize = 20.sp,
+                    fontSize =
+                        20.sp,
+
 
                     fontWeight =
                         FontWeight.Bold
@@ -449,17 +581,19 @@ fun DeviceScreen() {
                 )
 
 
+
                 Spacer(
                     Modifier.height(20.dp)
                 )
 
 
+
+
                 SettingItem(
 
-                    title = "抬腕亮屏",
+                    "抬腕亮屏",
 
-                    checked =
-                        wristRaiseEnabled
+                    wristRaiseEnabled
 
                 ){
 
@@ -469,17 +603,12 @@ fun DeviceScreen() {
 
 
 
-                Spacer(
-                    Modifier.height(16.dp)
-                )
-
 
                 SettingItem(
 
-                    title = "久坐提醒",
+                    "久坐提醒",
 
-                    checked =
-                        sedentaryReminderEnabled
+                    sedentaryReminderEnabled
 
                 ){
 
@@ -489,17 +618,13 @@ fun DeviceScreen() {
 
 
 
-                Spacer(
-                    Modifier.height(16.dp)
-                )
 
 
                 SettingItem(
 
-                    title = "勿扰模式",
+                    "勿扰模式",
 
-                    checked =
-                        doNotDisturbEnabled
+                    doNotDisturbEnabled
 
                 ){
 
@@ -508,12 +633,21 @@ fun DeviceScreen() {
                 }
 
 
+
             }
 
 
         }
 
 
+
+
+
+
+
+        /*
+        解除绑定
+         */
 
 
         Button(
@@ -537,11 +671,13 @@ fun DeviceScreen() {
                 ),
 
 
+
             onClick = {
 
-                isConnected=false
+                isConnected = false
 
             }
+
 
         ){
 
@@ -555,9 +691,12 @@ fun DeviceScreen() {
 
 
 
+
+
         Spacer(
             Modifier.height(80.dp)
         )
+
 
 
     }
@@ -569,8 +708,21 @@ fun DeviceScreen() {
 
 
 
+
+
+
+
+/*
+设备信息卡
+ */
+
 @Composable
-fun DeviceInfoCard(){
+fun DeviceInfoCard(
+
+    deviceInfo: DeviceInfo?
+
+){
+
 
 
     Card(
@@ -578,10 +730,22 @@ fun DeviceInfoCard(){
         modifier =
             Modifier.fillMaxWidth(),
 
+
         shape =
-            RoundedCornerShape(26.dp)
+            RoundedCornerShape(26.dp),
+
+
+        colors =
+            CardDefaults.cardColors(
+
+                containerColor =
+                    Color(0xFFF3F4FF)
+
+            )
+
 
     ){
+
 
 
         Column(
@@ -592,11 +756,14 @@ fun DeviceInfoCard(){
         ){
 
 
+
             Text(
 
                 "📱 设备信息",
 
-                fontSize = 20.sp,
+                fontSize =
+                    20.sp,
+
 
                 fontWeight =
                     FontWeight.Bold
@@ -604,31 +771,74 @@ fun DeviceInfoCard(){
             )
 
 
+
             Spacer(
                 Modifier.height(15.dp)
             )
 
 
-            InfoRow(
+
+
+
+            DeviceInfoItem(
+
                 "设备名称",
-                "MyBand X1"
+
+                deviceInfo?.deviceName
+                    ?: "加载中..."
+
             )
 
 
-            InfoRow(
-                "MAC地址",
-                "AA:BB:CC:DD"
+
+
+            DeviceInfoItem(
+
+                "设备编号",
+
+                deviceInfo?.deviceId
+                    ?: "加载中..."
+
             )
 
 
-            InfoRow(
-                "固件版本",
-                "V1.2.3"
+
+
+
+            DeviceInfoItem(
+
+                "连接状态",
+
+                if(deviceInfo?.status == 1)
+
+                    "在线"
+
+                else
+
+                    "离线"
+
             )
+
+
+
+
+
+            DeviceInfoItem(
+
+                "用户ID",
+
+                deviceInfo?.userId
+                    ?.toString()
+                    ?: "加载中..."
+
+            )
+
 
         }
 
+
     }
+
 
 }
 
@@ -636,8 +846,15 @@ fun DeviceInfoCard(){
 
 
 
+
+
+/*
+设备信息行
+ */
+
+
 @Composable
-fun InfoRow(
+fun DeviceInfoItem(
 
     title:String,
 
@@ -650,11 +867,15 @@ fun InfoRow(
 
         modifier =
             Modifier
+
                 .fillMaxWidth()
-                .padding(vertical = 6.dp),
+
+                .padding(vertical = 8.dp),
+
 
         horizontalArrangement =
             Arrangement.SpaceBetween
+
 
     ){
 
@@ -667,6 +888,7 @@ fun InfoRow(
                 Color.Gray
 
         )
+
 
 
         Text(
@@ -688,6 +910,13 @@ fun InfoRow(
 
 
 
+
+
+/*
+设置开关
+ */
+
+
 @Composable
 fun SettingItem(
 
@@ -703,13 +932,20 @@ fun SettingItem(
     Row(
 
         modifier =
-            Modifier.fillMaxWidth(),
+            Modifier
+
+                .fillMaxWidth()
+
+                .padding(vertical = 10.dp),
+
 
         horizontalArrangement =
             Arrangement.SpaceBetween,
 
+
         verticalAlignment =
             Alignment.CenterVertically
+
 
     ){
 
@@ -718,9 +954,11 @@ fun SettingItem(
 
             title,
 
-            fontSize = 16.sp
+            fontSize =
+                16.sp
 
         )
+
 
 
         Switch(
@@ -728,6 +966,7 @@ fun SettingItem(
             checked = checked,
 
             onCheckedChange = onChange,
+
 
             colors =
                 SwitchDefaults.colors(
@@ -738,6 +977,7 @@ fun SettingItem(
                 )
 
         )
+
 
     }
 

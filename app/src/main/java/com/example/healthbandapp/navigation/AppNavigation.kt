@@ -276,6 +276,14 @@ fun AppNavigation() {
 
             }
 
+            // 验证码
+
+            composable("verificationCode"){
+
+                VerificationCodeScreen()
+
+            }
+
 
 
 
