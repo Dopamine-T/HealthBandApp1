@@ -137,16 +137,13 @@ fun HrvScreen(navController: NavHostController) {
             // ========================
             // 2. 身体准备度 (纯白背景)
             // ========================
-            HrvCard("身体准备度", Icons.Filled.Bolt, Color(0xFFFF9800)) {
+            HrvCard("最近数据", Icons.Filled.Bolt, Color(0xFFFF9800)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("准备度", color = Color.Gray, fontSize = 14.sp)
-                        Text("88", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFF9800))
-                    }
+
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text("最高 HRV", color = Color.Gray, fontSize = 14.sp)
                         Text("${hrvData.max()} ms", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
@@ -193,50 +190,8 @@ fun HrvScreen(navController: NavHostController) {
                 }
             }
 
-            Spacer(Modifier.height(20.dp))
 
-            // ========================
-            // 4. 压力分析 (浅红背景)
-            // ========================
-            HrvCard("压力分析", Icons.Filled.Psychology, Color(0xFFC62828), Color(0xFFFFEBEE)) {
-                HrvInfoRow("压力等级", "低", Color(0xFFC62828))
-                HrvInfoRow("精神状态", "放松", Color(0xFFC62828))
-                HrvInfoRow("神经疲劳度", "12%", Color(0xFFC62828))
-            }
 
-            Spacer(Modifier.height(20.dp))
-
-            // ========================
-            // 5. 身体恢复 (浅青背景)
-            // ========================
-            HrvCard("身体恢复", Icons.Filled.Spa, Color(0xFF006064), Color(0xFFE0F7FA)) {
-                HrvInfoRow("恢复状态", "良好", Color(0xFF006064))
-                HrvInfoRow("运动恢复指数", "88", Color(0xFF006064))
-                HrvInfoRow("肌肉疲劳指数", "12", Color(0xFF006064))
-            }
-
-            Spacer(Modifier.height(20.dp))
-
-            // ========================
-            // 6. 自主神经分析 (浅紫背景)
-            // ========================
-            HrvCard("自主神经分析", Icons.Filled.SelfImprovement, Color(0xFF6A1B9A), Color(0xFFF3E5F5)) {
-                HrvInfoRow("交感神经", "正常", Color(0xFF6A1B9A))
-                HrvInfoRow("副交感神经", "活跃", Color(0xFF6A1B9A))
-                HrvInfoRow("神经平衡", "优秀", Color(0xFF6A1B9A))
-            }
-
-            Spacer(Modifier.height(20.dp))
-
-            // ========================
-            // 7. 今日建议 (浅绿背景)
-            // ========================
-            HrvCard("今日建议", Icons.Filled.TipsAndUpdates, Color(0xFF2E7D32), Color(0xFFE8F5E9)) {
-                SuggestionRow("保持规律睡眠", Color(0xFF2E7D32))
-                SuggestionRow("建议30分钟有氧运动", Color(0xFF2E7D32))
-                SuggestionRow("可进行5分钟呼吸训练", Color(0xFF2E7D32))
-                SuggestionRow("注意补充水分", Color(0xFF2E7D32))
-            }
 
             Spacer(Modifier.height(60.dp))
         }

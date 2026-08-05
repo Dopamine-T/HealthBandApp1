@@ -174,12 +174,12 @@ fun HrvCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconBox(Icons.Filled.Thermostat, themeColor, themeColor.copy(alpha = 0.1f))
                 Spacer(Modifier.width(12.dp))
-                Text("体温 & HRV", modifier = Modifier.weight(1f), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = themeColor)
+                Text(" HRV", modifier = Modifier.weight(1f), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = themeColor)
                 Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "查看详情", tint = themeColor.copy(alpha = 0.5f))
             }
             Spacer(Modifier.height(16.dp))
             Text("HRV：$hrvValue ms", color = themeColor.copy(alpha = 0.8f), fontSize = 15.sp)
-            Text("体温：$temperature ℃", color = themeColor.copy(alpha = 0.8f), fontSize = 15.sp)
+
             Text("压力：$stressLevel", color = themeColor, fontSize = 15.sp, fontWeight = FontWeight.Medium)
         }
     }

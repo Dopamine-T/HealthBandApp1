@@ -256,12 +256,10 @@ fun ProfileScreen(
             elevation = CardDefaults.cardElevation(2.dp)
         ) {
             Column {
-                ProfileCard(title = "🏥 健康数据", onClick = { navController.navigate("health") })
-                HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+
                 ProfileCard(title = "🏃 运动记录", onClick = { navController.navigate("sportRecord") })
                 HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
-                ProfileCard(title = "🆘 医疗急救卡", onClick = { navController.navigate("emergency") })
-                HorizontalDivider(modifier = Modifier.padding(start = 16.dp, end = 16.dp))
+
                 ProfileCard(title = "📊 运动周报", onClick = { navController.navigate("weekly") })
             }
         }

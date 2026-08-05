@@ -20,6 +20,7 @@ import com.example.healthbandapp.ui.theme.card.HeartCard
 import com.example.healthbandapp.ui.theme.card.HrvCard
 import com.example.healthbandapp.ui.theme.card.OxygenCard
 import com.example.healthbandapp.ui.theme.card.SleepSummaryCard
+import com.example.healthbandapp.ui.theme.card.TemperatureCard
 
 
 
@@ -93,16 +94,17 @@ fun HealthScreen(
 
 
 
-        SleepSummaryCard(navController)
+
+
+
+        HrvCard(navController)
 
 
         Spacer(
             modifier = Modifier.height(16.dp)
         )
 
-
-
-        HrvCard(navController)
+        TemperatureCard(navController)
 
 
         Spacer(

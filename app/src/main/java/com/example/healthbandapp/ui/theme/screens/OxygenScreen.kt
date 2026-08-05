@@ -212,59 +212,62 @@ fun OxygenScreen(navController: NavHostController) {
 
             Spacer(Modifier.height(20.dp))
 
-            // ========================
-            // 4. 今日概览 & 夜间监测
-            // ========================
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Card(modifier = Modifier.weight(1f), shape = RoundedCornerShape(20.dp)) {
-                    Column(Modifier.padding(20.dp)) {
-                        Text("今日概览", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Spacer(Modifier.height(10.dp))
-                        Text("平均：98%", fontSize = 14.sp)
-                        Text("最高：100%", fontSize = 14.sp)
-                        Text("最低：94%", fontSize = 14.sp)
-                    }
-                }
-                Card(modifier = Modifier.weight(1f), shape = RoundedCornerShape(20.dp)) {
-                    Column(Modifier.padding(20.dp)) {
-                        Text("夜间监测", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                        Spacer(Modifier.height(10.dp))
-                        Text("夜间最低：95%", fontSize = 14.sp)
-                        Text("呼吸暂停：1次", fontSize = 14.sp)
-                        Text("风险：低", fontSize = 14.sp, color = Color(0xff2E8B57))
-                    }
-                }
-            }
 
-            Spacer(Modifier.height(20.dp))
+// ========================
+// 今日血氧概览
+// ========================
 
-            // ========================
-            // 5. 异常提醒设置
-            // ========================
             Card(
+
                 modifier = Modifier.fillMaxWidth(),
+
                 shape = RoundedCornerShape(20.dp)
-            ) {
-                Column(Modifier.padding(20.dp)) {
-                    Text("⚠ 血氧异常提醒", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    Spacer(Modifier.height(15.dp))
-                    Text("低血氧阈值：$lowLimit%")
-                    Spacer(Modifier.height(15.dp))
-                    HorizontalDivider()
-                    Spacer(Modifier.height(15.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("开启低血氧提醒", fontSize = 16.sp)
-                        Switch(checked = warning, onCheckedChange = { warning = it })
-                    }
+
+            ){
+
+                Column(
+
+                    modifier = Modifier.padding(20.dp)
+
+                ){
+
+
+                    Text(
+
+                        "今日概览",
+
+                        fontSize = 18.sp,
+
+                        fontWeight = FontWeight.Bold
+
+                    )
+
+
+                    Spacer(
+                        Modifier.height(12.dp)
+                    )
+
+
+                    Text(
+                        "平均血氧：98%",
+                        fontSize = 14.sp
+                    )
+
+                    Text(
+                        "最高血氧：100%",
+                        fontSize = 14.sp
+                    )
+
+                    Text(
+                        "最低血氧：94%",
+                        fontSize = 14.sp
+                    )
+
+
                 }
+
             }
+
 
             Spacer(Modifier.height(60.dp))
         }

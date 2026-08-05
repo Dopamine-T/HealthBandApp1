@@ -353,8 +353,3 @@ fun AppNavigation() {
 
 
 }
-
-@Composable
-fun TemperatureScreen(x0: NavHostController) {
-    TODO("Not yet implemented")
-}
